@@ -2,20 +2,12 @@ import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
 
+	// создание провайдера
 	const provider = new ColorsViewProvider(context.extensionUri);
 
+	// регистрация провайдера
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(ColorsViewProvider.viewType, provider));
-
-	context.subscriptions.push(
-		vscode.commands.registerCommand('calicoColors.addColor', () => {
-			provider.addColor();
-		}));
-
-	context.subscriptions.push(
-		vscode.commands.registerCommand('calicoColors.clearColors', () => {
-			provider.clearColors();
-		}));
 }
 
 class ColorsViewProvider implements vscode.WebviewViewProvider {
@@ -28,6 +20,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 		private readonly _extensionUri: vscode.Uri,
 	) { }
 
+	// конструктор вью
 	public resolveWebviewView(
 		webviewView: vscode.WebviewView,
 		context: vscode.WebviewViewResolveContext,
@@ -43,33 +36,34 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 				this._extensionUri
 			]
 		};
-
+		// разметка
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
+		// подписка на сообщения скрипта
 		webviewView.webview.onDidReceiveMessage(data => {
 			switch (data.type) {
 				case 'colorSelected':
 					{
+						// реализация добавления инфы от вьюхи
 						vscode.window.activeTextEditor?.insertSnippet(new vscode.SnippetString(`#${data.value}`));
 						break;
+					}
+				case 'createTable':
+					{
+						// eslint-disable-next-line prefer-const
+						let a = data.title;
+						// eslint-disable-next-line prefer-const
+						let r = data.row;
+						// eslint-disable-next-line prefer-const
+						let c = data.column;
+						// eslint-disable-next-line prefer-const
+						let b = 0;
 					}
 			}
 		});
 	}
 
-	public addColor() {
-		if (this._view) {
-			this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
-			this._view.webview.postMessage({ type: 'addColor' });
-		}
-	}
-
-	public clearColors() {
-		if (this._view) {
-			this._view.webview.postMessage({ type: 'clearColors' });
-		}
-	}
-
+	// разметка формы, стили, скрипт (важно ид color-list, add-color-button )
 	private _getHtmlForWebview(webview: vscode.Webview) {
 		// Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
 		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js'));
@@ -102,17 +96,17 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 				<title>Cat Colors</title>
 			</head>
 			<body>
-				<ul class="color-list">
-				</ul>
-
-				<button class="add-color-button">Add Color</button>
-
+				Создание таблицы
+				<div class="table-title"></div>
+				<div class="table-row"></div>
+				<div class="table-column"></div>
+				<button class="add-table">Создать</button>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
 	}
 }
-
+// шаблон имени скрипта
 function getNonce() {
 	let text = '';
 	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

@@ -5,96 +5,88 @@
 (function () {
     const vscode = acquireVsCodeApi();
 
-    const oldState = vscode.getState() || { colors: [] };
+    //const oldState = vscode.getState() || { tableTitle: String, rows: Number, columns: Number };
 
-    /** @type {Array<{ value: string }>} */
-    let colors = oldState.colors;
+    /** @type {string} */
+    let tableTitle = '';//oldState.tableTitle;
+    /** @type {Number} */
+    let rows = 1;//oldState.rows;
+    /** @type {Number} */
+    let columns = 1;//oldState.columns;
 
-    updateColorList(colors);
+    updateColorList(tableTitle, rows, columns);
 
-    document.querySelector('.add-color-button').addEventListener('click', () => {
-        addColor();
-    });
-
-    // Handle messages sent from the extension to the webview
-    window.addEventListener('message', event => {
-        const message = event.data; // The json data that the extension sent
-        switch (message.type) {
-            case 'addColor':
-                {
-                    addColor();
-                    break;
-                }
-            case 'clearColors':
-                {
-                    colors = [];
-                    updateColorList(colors);
-                    break;
-                }
-
-        }
+    document.querySelector('.add-table').addEventListener('click', () => {
+        onCreateTableClicked(tableTitle, rows, columns);
     });
 
     /**
-     * @param {Array<{ value: string }>} colors
+     * @param {string} title
+     * @param {Number} row
+     * @param {Number} column
      */
-    function updateColorList(colors) {
-        const ul = document.querySelector('.color-list');
-        ul.textContent = '';
-        for (const color of colors) {
-            const li = document.createElement('li');
-            li.className = 'color-entry';
+    function updateColorList(title, row, column) {
+     
 
-            const colorPreview = document.createElement('div');
-            colorPreview.className = 'color-preview';
-            colorPreview.style.backgroundColor = `#${color.value}`;
-            colorPreview.addEventListener('click', () => {
-                onColorClicked(color.value);
-            });
-            li.appendChild(colorPreview);
+        // таблица
+        const dt = document.querySelector('.table-title');
+        dt.textContent = 'название';
+        const input2 = document.createElement('input');
+        input2.className = 'title-input';
+        input2.type = 'text';
+        if (title == undefined) input2.value = '';
+        else input2.value = title;
+        //input2.value = title; // проверять пустое нет
+        input2.addEventListener('change', (e) => {
+            const value = e.target.value;
+            tableTitle = value;
+            //updateColorList(colors, value, row, column);
+        });
+        dt.appendChild(input2);
+        
+        const dr = document.querySelector('.table-row');
+        dr.textContent = 'строки';
+        const input3 = document.createElement('input');
+        input3.className = 'title-row';
+        input3.type = 'number';
+        if (row == undefined) input3.value = '';
+        else input3.value = row.toString();
+        //input3.value = ''; // row.toString(); проверять пустое нет. 
+        input3.addEventListener('change', (e) => {
+            const value = parseInt(e.target.value);
+            rows = value;
+            //updateColorList(colors, title, value, column);
+        });
+        dr.appendChild(input3);
 
-            const input = document.createElement('input');
-            input.className = 'color-input';
-            input.type = 'text';
-            input.value = color.value;
-            input.addEventListener('change', (e) => {
-                const value = e.target.value;
-                if (!value) {
-                    // Treat empty value as delete
-                    colors.splice(colors.indexOf(color), 1);
-                } else {
-                    color.value = value;
-                }
-                updateColorList(colors);
-            });
-            li.appendChild(input);
-
-            ul.appendChild(li);
-        }
+        const dc = document.querySelector('.table-column');
+        dc.textContent = 'колонки';
+        const input4 = document.createElement('input');
+        input4.className = 'title-column';
+        input4.type = 'number';
+        if (column == undefined) input4.value = '';
+        else input4.value = column.toString();
+        //input4.value = '';
+        input4.addEventListener('change', (e) => {
+            const value = parseInt(e.target.value);
+            columns = value;
+            //updateColorList(colors, title, row, value);
+        });
+        dc.appendChild(input4);
 
         // Update the saved state
-        vscode.setState({ colors: colors });
+        //vscode.setState({ tableTitle: title, rows: row, columns: column });
     }
 
     /** 
-     * @param {string} color 
+     * @param {string} tableTitle 
+     * @param {Number} rows 
+     * @param {Number} columns 
      */
-    function onColorClicked(color) {
-        vscode.postMessage({ type: 'colorSelected', value: color });
+     function onCreateTableClicked(tableTitle, rows, columns) {
+        vscode.postMessage({ type: 'createTable', title: tableTitle, row: rows, column: columns });
     }
 
-    /**
-     * @returns string
-     */
-    function getNewCalicoColor() {
-        const colors = ['020202', 'f1eeee', 'a85b20', 'daab70', 'efcb99'];
-        return colors[Math.floor(Math.random() * colors.length)];
-    }
-
-    function addColor() {
-        colors.push({ value: getNewCalicoColor() });
-        updateColorList(colors);
-    }
 }());
 
 

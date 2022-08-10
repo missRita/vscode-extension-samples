@@ -1,4 +1,7 @@
+/* eslint-disable no-mixed-spaces-and-tabs */
 import * as vscode from 'vscode';
+import * as path from 'path';
+import { ExtensionContext, languages, extensions, workspace, commands } from "vscode";
 
 const cats = {
 	'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
@@ -9,9 +12,85 @@ const cats = {
 export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('catCoding.start', () => {
-			CatCodingPanel.createOrShow(context.extensionUri);
+
+			const editor = vscode.window.activeTextEditor;
+			if (!editor) {
+				//console.log('activeTextEditor closed');
+				return; // No open text editor
+			}
+
+			const panel = vscode.window.createWebviewPanel(
+				'catCoding',
+				'Cat Coding',
+				vscode.ViewColumn.One,
+				{}
+			);
+
+			if (!vscode.workspace.workspaceFolders) return;
+			const projectPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+			// текст
+			let text = editor.document.getText();
+
+			// имя файла
+			const filename = path.dirname(editor.document.fileName);
+
+			//let title = '';
+			
+			const titlePrologRegexp = new RegExp('(.*?)(<title>(.*?)<\\/title>)(.*?)(<prolog>.*?<\\/prolog>)(.*)', 'sig');
+			text = text.replace(titlePrologRegexp, function (group0, group1, group2, group3, group4, group5, group6) {
+				let ret = "";
+
+				ret += `${group1}<h1>${group3}</h1>${group4}${group6}`;
+				//title = c;
+
+				return ret;
+			});
+
+			const imageRegexp = new RegExp('<(image)(.*?)(href)="(.*?)"(.*?)>', 'sig');
+
+			text = text.replace(imageRegexp, function (a, b, c, d, e, f) {
+				const ppath = vscode.Uri.file(path.resolve(filename, e));
+				const href = panel.webview.asWebviewUri(ppath);
+
+				const ret = `<img${c}src="${href}"${f}>`;
+
+				return ret;
+			});
+
+
+			const figureRegexp = new RegExp('<fig(.*?)>(.*?)<\\/fig>', 'sig');
+			text = text.replace(figureRegexp, function (a, b, c) {
+				let ret = "";
+
+				ret += `<figure${b}>${c}</figure>`;
+
+				return ret;
+			});
+
+			const figcaptionRegexp = new RegExp('(<figure.*?>.*?)<title>(.*?)<\\/title>(.*?<\\/figure>)', 'sig');
+			text = text.replace(figcaptionRegexp, function (a, b, c, d) {
+				let ret = "";
+
+				ret += `${b}<figcaption>${c}</figcaption>${d}`;
+
+				return ret;
+			});
+
+			
+		  // Get path to resource on disk
+		  //const onDiskPath = vscode.Uri.file(path.join(context.extensionPath, 'media', 'cat.gif'));
+		  //const set = vscode.Uri.file(path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, '../maps/set.png'));
+	
+		  // And get the special URI to use with the webview
+		  //const catGifSrc = panel.webview.asWebviewUri(onDiskPath);
+		  //const seturl = panel.webview.asWebviewUri(set);
+	
+		  //text = `<html>\n<head>\n<meta charset="UTF-8">\n${title}</head>\n<body>\n` + text;
+		  //text += '</body>\n</html>';
+
+		  panel.webview.html = text;
 		})
-	);
+	  );
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('catCoding.doRefactor', () => {

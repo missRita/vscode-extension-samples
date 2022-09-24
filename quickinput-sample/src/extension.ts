@@ -18,7 +18,7 @@ export function activate(context: ExtensionContext) {
 		};
 		const quickPick = window.createQuickPick();
 		quickPick.items = Object.keys(options).map(label => ({ label }));
-		quickPick.onDidChangeSelection(selection => {
+		quickPick.onDidChangeSelection((selection: { label: string | number; }[]) => {
 			if (selection[0]) {
 				options[selection[0].label](context)
 					.catch(console.error);

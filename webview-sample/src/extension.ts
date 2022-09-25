@@ -1,32 +1,28 @@
 import * as vscode from 'vscode';
 
-const cats = {
-	'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
-	'Compiling Cat': 'https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif',
-	'Testing Cat': 'https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif'
-};
-
 export interface CommObj {
 	content: string;
 	id: string;
 	author : string;
+	date: Date;
+	flag: boolean;
 }
 
 export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
-		vscode.commands.registerCommand('catCoding.start', () => {
+		vscode.commands.registerCommand('catCoding.OpenCommentsPanel', () => {
 			const comments: CommObj[] = [];
-			comments.push({content: 'com1', id: '123', author: 'Serman'});
-			comments.push({content: 'com2', id: '456', author: 'Serman'});
-			comments.push({content: 'com3', id: '789', author: 'Dita user'});
+			comments.push({content: 'com1', id: '123', author: 'Serman', date: new Date(), flag: true});
+			comments.push({content: 'com2', id: '456', author: 'Serman', date: new Date(), flag: false});
+			comments.push({content: 'com3', id: '789', author: 'Dita user', date: new Date(), flag: false});
 			CatCodingPanel.createOrShow(context.extensionUri, comments);
 		})
 	);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('catCoding.doRefactor', () => {
+		vscode.commands.registerCommand('catCoding.AddComment', () => {
 			if (CatCodingPanel.currentPanel) {
-				CatCodingPanel.currentPanel.doRefactor({content: 'newcom', id: '017', author: 'Dita user'});
+				CatCodingPanel.currentPanel.Add({content: 'newcom', id: '017', author: 'Dita user', date: new Date(), flag: false});
 			}
 		})
 	);
@@ -34,6 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
 	return {
+
 		// Enable javascript in the webview
 		enableScripts: true,
 
@@ -77,7 +74,7 @@ class CatCodingPanel {
 		// Otherwise, create a new panel.
 		const panel = vscode.window.createWebviewPanel(
 			CatCodingPanel.viewType,
-			'Cat Coding',
+			'Review',
 			vscode.ViewColumn.Two,
 			getWebviewOptions(extensionUri),
 		);
@@ -95,6 +92,7 @@ class CatCodingPanel {
 
 		// Set the webview's initial html content
 		this._update(CatCodingPanel._coms);
+		vscode.window.showWarningMessage('конструктор');
 
 		// Listen for when the panel is disposed
 		// This happens when the user closes the panel or when the panel is closed programmatically
@@ -104,6 +102,7 @@ class CatCodingPanel {
 		this._panel.onDidChangeViewState(
 			e => {
 				if (this._panel.visible) {
+					vscode.window.showWarningMessage('стейт');
 					this._update(CatCodingPanel._coms);
 				}
 			},
@@ -116,6 +115,24 @@ class CatCodingPanel {
 			message => {
 				switch (message.command) {
 					case 'remove':
+						// удаление комментария
+						Remove(message.id);
+						return;
+					case 'take':
+						// переход к комментарию
+						Take(message.id);
+						return;
+					case 'done':
+						// пометить выполенным
+						Done(message.id, message.flag);
+						return;
+					case 'delete':
+						vscode.window.showErrorMessage(message.id);
+						return;
+					case 'clear':
+						vscode.window.showErrorMessage(message.id);
+						return;
+					case 'filter':
 						vscode.window.showErrorMessage(message.id);
 						return;
 				}
@@ -125,17 +142,20 @@ class CatCodingPanel {
 		);
 	}
 
-	public doRefactor(com : CommObj) {
-		// Send a message to the webview webview.
-		// You can send any JSON serializable data.
-		CatCodingPanel._coms.push(com);
-		this._panel.webview.postMessage({ command: 'refactor', content: com.content, id: com.id});
+	public Refresh()
+	{
+		if (this._panel.visible) {
+			this._update(CatCodingPanel._coms);
+		}
 	}
 
-	public load(coms: CommObj[]) {
-		// Send a message to the webview webview.
-		// You can send any JSON serializable data.
-		this._panel.webview.postMessage({ command: 'coms', they: coms});
+	public Add(com : CommObj) {
+		CatCodingPanel._coms.push(com);
+		this._panel.webview.postMessage({ command: 'add', content: com.content, id: com.id, author: com.author, flag: com.flag});
+	}
+
+	public Load(coms: CommObj[]) {
+		this._panel.webview.postMessage({ command: 'allCommnets', they: coms});
 	}
 
 	public dispose() {
@@ -155,28 +175,13 @@ class CatCodingPanel {
 	private _update(comments : CommObj[]) {
 		const webview = this._panel.webview;
 
-		// Vary the webview's content based on where it is located in the editor.
-		switch (this._panel.viewColumn) {
-			case vscode.ViewColumn.Two:
-				this._updateForCat(webview, 'Compiling Cat', comments);
-				return;
-
-			case vscode.ViewColumn.Three:
-				this._updateForCat(webview, 'Testing Cat', comments);
-				return;
-
-			case vscode.ViewColumn.One:
-			default:
-				this._updateForCat(webview, 'Coding Cat', comments);
-				return;
-		}
+		this._updateForCat(webview, comments);
 	}
 
-	private _updateForCat(webview: vscode.Webview, catName: keyof typeof cats, comments : CommObj[]) {
-		this._panel.title = catName;
+	private _updateForCat(webview: vscode.Webview, comments : CommObj[]) {
 		this._panel.webview.html = this._getHtmlForWebview(webview, comments);
 
-		this.load(comments);
+		this.Load(CatCodingPanel._coms);
 	}
 
 	private _getHtmlForWebview(webview: vscode.Webview, comments: CommObj[]) {
@@ -205,9 +210,10 @@ class CatCodingPanel {
 				<title>Cat Coding</title>
 			</head>
 			<body>
-				<h1 id="lines-of-code-counter">0</h1>
-				<div id="coms">
-
+				<h1>Комментарии</h1>
+				<div>
+					<ul id="coms" style="list-style: none;">
+					</ul>
 				</div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
@@ -222,4 +228,37 @@ function getNonce() {
 		text += possible.charAt(Math.floor(Math.random() * possible.length));
 	}
 	return text;
+}
+
+function Remove(id : string) : void
+{
+	// найти в эдиторе комментарий по id
+	// удалить комментарий из текста
+	
+	// убрать из списка комментарий
+	CatCodingPanel._coms = CatCodingPanel._coms.filter(el => el.id !== id);
+	// обновить панель
+	CatCodingPanel.currentPanel?.Refresh();
+}
+
+function Take(id : string) : void
+{
+	// найти в эдиторе комментарий по id
+	// выделить комментарий
+	
+}
+
+function Done(id : string, flag: boolean) : void
+{
+	// найти в эдиторе комментарий по id
+	// добавить атрибут flag
+	
+	if(flag)
+	{
+		// удалить атрибут
+	}
+	else
+	{
+		// установить
+	}
 }

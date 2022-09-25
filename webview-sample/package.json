@@ -16,28 +16,28 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:catCoding.start",
-		"onCommand:catCoding.doRefactor",
+		"onCommand:catCoding.OpenCommentsPanel",
+		"onCommand:catCoding.AddComment",
 		"onWebviewPanel:catCoding"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "catCoding.start",
+				"command": "catCoding.OpenCommentsPanel",
 				"title": "Start cat coding session",
-				"category": "Cat Coding"
+				"category": "Открыть комментарии"
 			},
 			{
-				"command": "catCoding.doRefactor",
+				"command": "catCoding.AddComment",
 				"title": "Do some refactoring",
-				"category": "Cat Coding"
+				"category": "Оставить комментарий"
 			}
 		],
 		"menus": {
 			"editor/context": [
 				{
-					"command": "catCoding.doRefactor",
+					"command": "catCoding.AddComment",
 					"group": "z_commands"
 				}
 			]

@@ -33,7 +33,15 @@
 				"title": "Do some refactoring",
 				"category": "Cat Coding"
 			}
-		]
+		],
+		"menus": {
+			"editor/context": [
+				{
+					"command": "catCoding.doRefactor",
+					"group": "z_commands"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

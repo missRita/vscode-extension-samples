@@ -22,7 +22,8 @@
 
      // @ts-ignore
      function Load(they) {
-        const ul = document.getElementById('coms');
+        let ul = document.getElementById('coms');
+        //ul?..setProperty('listStyle', 'none');
         
          for (let index = 0; index < they.length; index++) {
             const el = they[index];

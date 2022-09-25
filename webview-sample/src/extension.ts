@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import { workspace, commands } from "vscode";
+
 
 export interface CommObj {
 	content: string;
@@ -52,6 +54,7 @@ class CatCodingPanel {
 
 	// хранилище комментов
 	public static _coms: CommObj[] = [];
+	public static _filter: string;
 
 	private readonly _panel: vscode.WebviewPanel;
 	private readonly _extensionUri: vscode.Uri;
@@ -60,6 +63,7 @@ class CatCodingPanel {
 	public static createOrShow(extensionUri: vscode.Uri, comments : CommObj[]) {
 		
 		CatCodingPanel._coms = comments;
+		this._filter = '';
 		
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
@@ -127,13 +131,13 @@ class CatCodingPanel {
 						Done(message.id, message.flag);
 						return;
 					case 'delete':
-						vscode.window.showErrorMessage(message.id);
+						Delete();
 						return;
 					case 'clear':
-						vscode.window.showErrorMessage(message.id);
+						Clear();
 						return;
 					case 'filter':
-						vscode.window.showErrorMessage(message.id);
+						Filter(message.author);
 						return;
 				}
 			},
@@ -144,8 +148,11 @@ class CatCodingPanel {
 
 	public Refresh()
 	{
+		let arr = CatCodingPanel._coms;
+		if(CatCodingPanel._filter.length !==0 ) arr = CatCodingPanel._coms.filter(e=>e.author === CatCodingPanel._filter);
+
 		if (this._panel.visible) {
-			this._update(CatCodingPanel._coms);
+			this._update(arr);
 		}
 	}
 
@@ -181,7 +188,7 @@ class CatCodingPanel {
 	private _updateForCat(webview: vscode.Webview, comments : CommObj[]) {
 		this._panel.webview.html = this._getHtmlForWebview(webview, comments);
 
-		this.Load(CatCodingPanel._coms);
+		this.Load(comments);
 	}
 
 	private _getHtmlForWebview(webview: vscode.Webview, comments: CommObj[]) {
@@ -212,7 +219,7 @@ class CatCodingPanel {
 			<body>
 				<h1>Комментарии</h1>
 				<div>
-					<ul id="coms" style="list-style: none;">
+					<ul id="coms">
 					</ul>
 				</div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
@@ -245,7 +252,42 @@ function Take(id : string) : void
 {
 	// найти в эдиторе комментарий по id
 	// выделить комментарий
-	
+	vscode.commands.executeCommand('selectPrevPageSuggestion').then(() => {
+		//const g = vscode.window.visibleTextEditors;
+		const editor = vscode.window.activeTextEditor;
+		if (!editor || editor === undefined) { return; }
+
+		// текст редактора
+		const text = editor.document.getText();
+
+		const commentRegexp = new RegExp('<\\?oxy_comment_start.*?id="(.*?)"[^>]*?>.*?<\\?oxy_comment_end\\?>', 'sig');
+
+		// опредеяем начало искомого комментария
+		let comIndex: number | undefined;
+		const comMatches = [...text.matchAll(commentRegexp)];
+		// фильтруем по id
+		comMatches.forEach((match) => {
+
+			comIndex = match.index;
+		});
+
+		if (comIndex === undefined) { return; }
+	});
+
+
+
+	//
+}
+
+function Delete() : void
+{
+	// найти в эдиторе все комментарии
+	// удалить их
+
+	// очистить список комментариев
+	CatCodingPanel._coms = [];
+	// обновить панель
+	CatCodingPanel.currentPanel?.Refresh();
 }
 
 function Done(id : string, flag: boolean) : void
@@ -261,4 +303,18 @@ function Done(id : string, flag: boolean) : void
 	{
 		// установить
 	}
+}
+
+function Clear(): void {
+	// снимаем фильтрацию
+	CatCodingPanel._filter = '';
+	// обновить панель
+	CatCodingPanel.currentPanel?.Refresh();
+}
+
+function Filter(author: string): void {
+	// выставляем признак фильтрации
+	CatCodingPanel._filter = author;
+	// обновить панель
+	CatCodingPanel.currentPanel?.Refresh();
 }

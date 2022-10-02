@@ -19,11 +19,20 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 	}
 
 	getChildren(element?: Dependency): Thenable<Dependency[]> {
-		this.Eprst('map1');
+		if(element === undefined)
+		{
+			const b = this.Eprst(undefined);
+			return Promise.resolve(b);
+		}
+		const a = this.Eprst(element.label);
+		return Promise.resolve(a);
+
+/* 
 		if (!this.workspaceRoot) {
 			vscode.window.showInformationMessage('No dependency in empty workspace');
 			return Promise.resolve([]);
 		}
+
 
 		if (element) {
 			return Promise.resolve(this.getDepsInPackageJson(path.join(this.workspaceRoot, 'node_modules', element.label, 'package.json')));
@@ -35,23 +44,23 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 				vscode.window.showInformationMessage('Workspace has no package.json');
 				return Promise.resolve([]);
 			}
-		}
+		} */
 
 	}
 
 	private Eprst(name: string) : Dependency[]
 	{
-		let result : Dependency[] = [];
+		const result : Dependency[] = [];
 		
-		// по name ищем всех дочерних
-		const a = Object.keys(tree3);
-		const b = 0;
-
 		// список дочерних
 		let list; 
+		let iconType = 0;
+		let lowlevel = false;
 
-		if(tree3.bookmap.name === name){
+		//if(tree3.bookmap.name === name){
+		if(name === undefined){
 			list = tree3.bookmap.elems;
+			iconType = 0;
 		}
 		if(list === undefined)
 		{
@@ -61,6 +70,7 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 				if(chapter.name === name )
 				{
 					list = chapter.elems;
+					iconType = 1;
 					break;
 				}
 				
@@ -74,44 +84,56 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 					const map = chapter.elems[index2];
 					if (map.name === name) {
 						list = map.elems;
+						iconType = 2;
 						break;
 					}
 				}
-				if(list !== undefined) { break; }
+				if(list !== undefined) { 
+					lowlevel = true;
+					break;
+				}
 			}
 		}
 
-		if (list === undefined) {
+/* 		if (list === undefined) {
 			// ищем на третьем уровне - конкретный топик
 			for (let index = 0; index < tree3.bookmap.elems.length; index++) {
 				const chapter = tree3.bookmap.elems[index];
 				for (let index2 = 0; index2 < chapter.elems.length; index2++) {
 					const map = chapter.elems[index2];
 					for (let index3 = 0; index3 < map.elems.length; index3++) {
-						if(map[index3].name === name) {
-						//
-						let dep = new Dependency(name, 'opop', vscode.TreeItemCollapsibleState.Collapsed);
-						result.push(dep);
-						return result;
+						if (map[index3].name === name) {
+							//
+							const dep = new Dependency(name, 'opop', vscode.TreeItemCollapsibleState.None);
+							result.push(dep);
+							return result;
+						}
 					}
 				}
 			}
-		}
-			// берем всех 
-			list.forEach(element => {
-				// depen
-				//element.name
-				//element.path
-				// result.push(..);
-			}); 
+		} */
+		if(list === undefined) return result;
+
+		list.forEach( (element : {name: string; path: string }) => {
+			const dep = new Dependency(element.name, element.path, iconType, lowlevel ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Collapsed,
+				{
+					command: 'extension.openPackageOnNpm',
+					title: '',
+					arguments: [element.path]
+				});
+			result.push(dep);
+		});
 
 		return result;
+
 	}
+
 
 	/**
 	 * Given the path to package.json, read all its dependencies and devDependencies.
 	 */
-	private getDepsInPackageJson(packageJsonPath: string): Dependency[] {
+	/* 	
+private getDepsInPackageJson(packageJsonPath: string): Dependency[] {
 		if (this.pathExists(packageJsonPath)) {
 			const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
 
@@ -147,8 +169,8 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 		}
 
 		return true;
-	}
-}
+	}*/
+} 
 
 
 export class Dependency extends vscode.TreeItem {
@@ -157,99 +179,45 @@ export class Dependency extends vscode.TreeItem {
 		public readonly label: string,
 		private readonly version: string,
 		//private readonly description : string,
+		private iconW : number,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
 		public readonly command?: vscode.Command
 	) {
 		super(label, collapsibleState);
 
 		this.tooltip = `${this.label}-${this.version}`;
-		this.description = this.version;
+		//this.description = this.version;
+		this.iconW = iconW;
 
-
+		if(iconW === 0 ){
+			this.iconPath = {
+				light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
+				dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
+			};
+		}
+		if(iconW === 1 ){
+			this.iconPath = {
+				light: path.join(__filename, '..', '..', 'resources', 'light', 'folder.svg'),
+				dark: path.join(__filename, '..', '..', 'resources', 'dark', 'folder.svg')
+			};
+		}
+		if(iconW === 2 ){
+			this.iconPath = {
+				light: path.join(__filename, '..', '..', 'resources', 'light', 'number.svg'),
+				dark: path.join(__filename, '..', '..', 'resources', 'dark', 'number.svg')
+			};
+		}
 	}
 
-	iconPath = {
+	
+
+/* 	iconPath = {
 		light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
 		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
-	};
+	}; */
 
 	contextValue = 'dependency';
 }
-
-
-const tree2 = {
-	bookmap: {
-		chapter: [
-			{
-				chapterName: 'ch1',
-				maps: [
-					{
-						mapName: 'map1',
-						path: 'mappath1',
-						topics: [
-							{
-								topicName: 'topic2',
-								path: 'topicpath2'
-							},
-							{
-								topicName: 'topic2',
-								path: 'topicpath2'
-							},
-							{
-								topicName: 'topic3',
-								path: 'topicpath3'
-							}
-						]
-					}
-				]
-			},
-			{
-				chapterName: 'ch2',
-				maps: [
-					{
-						mapName: 'map2',
-						path: 'mappath2',
-						topics: [
-							{
-								topicName: 'topic4',
-								path: 'topicpath4'
-							}
-						]
-					},
-					{
-						mapName: 'map3',
-						path: 'mappath3',
-						topics: [
-							{
-								topicName: 'topic5',
-								path: 'topicpath5'
-							},
-							{
-								topicName: 'topic6',
-								path: 'topicpath6'
-							}
-						]
-					}
-				]
-			},
-			{
-				chapterName: 'ch3',
-				maps: [
-					{
-						mapName: 'map2',
-						path: 'mappath2',
-						topics: []
-					},
-				]
-			},
-			{
-				chapterName: 'ch4',
-				maps: []
-			},
-		]
-	}
-};
-
 
 const tree3 = {
 	bookmap: {
@@ -314,8 +282,8 @@ const tree3 = {
 				name: 'ch3',
 				elems: [
 					{
-						name: 'map2',
-						path: 'mappath2',
+						name: 'map4',
+						path: 'mappath4',
 						elems: []
 					},
 				]

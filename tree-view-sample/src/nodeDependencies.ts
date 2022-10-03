@@ -18,13 +18,24 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 		return element;
 	}
 
+// TODO
+path => resource uri
+verseion => bookmap flag
+tooltip хз
+кнопку обновления оставить на будущее
+остальные команды убрать
+команду открытия сделать на активейшене
+иконки
+описать структуру json
+уточнить про вложенность гк-карта-карта-топик (гк-топик может быть?) если да то признак для иконки: раздел/карта/топик. оринтируюсь пока на схему: ГК-раздел-карта-топик
+
 	getChildren(element?: Dependency): Thenable<Dependency[]> {
 		if(element === undefined)
 		{
-			const b = this.Eprst(undefined);
+			const b = this.Eprst(undefined, '');
 			return Promise.resolve(b);
 		}
-		const a = this.Eprst(element.label);
+		const a = this.Eprst(element.label, element.description as string);
 		return Promise.resolve(a);
 
 /* 
@@ -32,23 +43,10 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 			vscode.window.showInformationMessage('No dependency in empty workspace');
 			return Promise.resolve([]);
 		}
-
-
-		if (element) {
-			return Promise.resolve(this.getDepsInPackageJson(path.join(this.workspaceRoot, 'node_modules', element.label, 'package.json')));
-		} else {
-			const packageJsonPath = path.join(this.workspaceRoot, 'package.json');
-			if (this.pathExists(packageJsonPath)) {
-				return Promise.resolve(this.getDepsInPackageJson(packageJsonPath));
-			} else {
-				vscode.window.showInformationMessage('Workspace has no package.json');
-				return Promise.resolve([]);
-			}
-		} */
-
+*/
 	}
 
-	private Eprst(name: string) : Dependency[]
+	private Eprst(name: string, description: string) : Dependency[]
 	{
 		const result : Dependency[] = [];
 		
@@ -59,9 +57,19 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 
 		//if(tree3.bookmap.name === name){
 		if(name === undefined){
+			//list = tree3.bookmap.elems;
+			//iconType = 0;
+			const dep = new Dependency('bookmap', '', iconType, vscode.TreeItemCollapsibleState.Collapsed);
+			dep.description = '777';
+			result.push(dep);
+			return result;
+		}
+		if(description === '777') 
+		{
 			list = tree3.bookmap.elems;
 			iconType = 0;
 		}
+		
 		if(list === undefined)
 		{
 			// ищем на втором уровне - названия чаптеров
@@ -103,15 +111,13 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 					const map = chapter.elems[index2];
 					for (let index3 = 0; index3 < map.elems.length; index3++) {
 						if (map[index3].name === name) {
-							//
-							const dep = new Dependency(name, 'opop', vscode.TreeItemCollapsibleState.None);
-							result.push(dep);
-							return result;
+						//
 						}
 					}
 				}
 			}
-		} */
+		}  */
+
 		if(list === undefined) return result;
 
 		list.forEach( (element : {name: string; path: string }) => {
@@ -127,49 +133,6 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 		return result;
 
 	}
-
-
-	/**
-	 * Given the path to package.json, read all its dependencies and devDependencies.
-	 */
-	/* 	
-private getDepsInPackageJson(packageJsonPath: string): Dependency[] {
-		if (this.pathExists(packageJsonPath)) {
-			const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-
-			const toDep = (moduleName: string, version: string): Dependency => {
-				if (this.pathExists(path.join(this.workspaceRoot, 'node_modules', moduleName))) {
-					return new Dependency(moduleName, version, vscode.TreeItemCollapsibleState.Collapsed);
-				} else {
-					return new Dependency(moduleName, version, vscode.TreeItemCollapsibleState.None, {
-						command: 'extension.openPackageOnNpm',
-						title: '',
-						arguments: [moduleName]
-					});
-				}
-			};
-
-			const deps = packageJson.dependencies
-				? Object.keys(packageJson.dependencies).map(dep => toDep(dep, packageJson.dependencies[dep]))
-				: [];
-			const devDeps = packageJson.devDependencies
-				? Object.keys(packageJson.devDependencies).map(dep => toDep(dep, packageJson.devDependencies[dep]))
-				: [];
-			return deps.concat(devDeps);
-		} else {
-			return [];
-		}
-	}
-
-	private pathExists(p: string): boolean {
-		try {
-			fs.accessSync(p);
-		} catch (err) {
-			return false;
-		}
-
-		return true;
-	}*/
 } 
 
 
@@ -178,15 +141,13 @@ export class Dependency extends vscode.TreeItem {
 	constructor(
 		public readonly label: string,
 		private readonly version: string,
-		//private readonly description : string,
 		private iconW : number,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
 		public readonly command?: vscode.Command
 	) {
 		super(label, collapsibleState);
 
-		this.tooltip = `${this.label}-${this.version}`;
-		//this.description = this.version;
+		this.tooltip = `${this.version}`;
 		this.iconW = iconW;
 
 		if(iconW === 0 ){
@@ -208,13 +169,6 @@ export class Dependency extends vscode.TreeItem {
 			};
 		}
 	}
-
-	
-
-/* 	iconPath = {
-		light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
-		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
-	}; */
 
 	contextValue = 'dependency';
 }

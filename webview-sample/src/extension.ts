@@ -101,7 +101,7 @@ async function AddComment()
 	let id = 'FGVH7VH4g454vhTHVr';//uuid.v4();
 
 	if(CatCodingPanel.currentPanel !== undefined) {
-	CatCodingPanel.currentPanel.Add({content: commentText, id: id, author: author, date: new Date(), flag: false});
+	CatCodingPanel.currentPanel.Add({content: commentText, id: id, author: author, date: date, flag: false});
 	}
 
 	let comment = `<?oxy_comment_start author="${author}" timestamp="${toIsoString(date)}" comment="${commentText}" id="${id}"?>${targetSub}<?oxy_comment_end?>`;
@@ -186,13 +186,8 @@ function GetComments(): CommObj[]
 
 			//comments.push({content: 'com3', id: '789', author: 'Dita user', date: new Date(), flag: false});
 			comments.push({content: comment, id: id, author: author, date: date, flag: flag});
-
 		});
-
-
 	});
-
-	
 
 	return comments;
 }
@@ -266,6 +261,7 @@ class CatCodingPanel {
 			e => {
 				if (this._panel.visible) {
 					vscode.window.showWarningMessage('стейт');
+					CatCodingPanel._coms = GetComments();
 					this._update(CatCodingPanel._coms);
 				}
 			},
@@ -390,11 +386,48 @@ function getNonce() {
 	return text;
 }
 
-function Remove(id : string) : void
+function Remove(id : string)
 {
 	// найти в эдиторе комментарий по id
 	// удалить комментарий из текста
-	
+	const editor = CatCodingPanel.ed;
+	if (!editor || editor === undefined) { return; }
+
+	// текст редактора
+	const text = editor.document.getText();
+
+	// опредеяем начало комментария
+	let commentIndex: number | undefined;
+	let commentLength : number;
+	const commentRegexp = new RegExp('<\\?oxy_comment_start(.*?)<\\?oxy_comment_end\\?>','sig');
+	const commentIdRegexp = new RegExp('id="(.*?)"');
+	const comMatches = [...text.matchAll(commentRegexp)];
+
+	// фильтруем по id
+	comMatches.forEach((match) => {
+		let m = commentIdRegexp.exec(match[1]);
+		if (m === null || m === undefined) { return; }
+		let cid = m[1];
+
+		if(cid === id){
+			commentIndex = match.index;
+			commentLength = match[0].length;
+			return;
+		}
+	});
+
+	if (commentIndex === undefined) { return; }
+
+	editor.edit(editBuilder => {
+		//if (editor === undefined) { return; }
+		if(commentIndex === undefined) return;
+		let p1 = editor.document.positionAt(commentIndex);
+		let p2 = editor.document.positionAt(commentIndex + commentLength);
+		editBuilder.replace(new vscode.Range(p1, p2), '');
+	}).then(() => {
+		vscode.commands.executeCommand('editor.action.formatDocument');
+	});
+
 	// убрать из списка комментарий
 	CatCodingPanel._coms = CatCodingPanel._coms.filter(el => el.id !== id);
 	// обновить панель
@@ -424,14 +457,49 @@ function Take(id : string) : void
 	if (comIndex === undefined) { return; }
 
 	CatCodingPanel.ed.selections = [new vscode.Selection(CatCodingPanel.ed.document.positionAt(comIndex),
-		CatCodingPanel.ed.document.positionAt(comIndex + comLength))];	
+		CatCodingPanel.ed.document.positionAt(comIndex + comLength))];
 
 }
 
-function Delete() : void
+async function Delete()
 {
-	// найти в эдиторе все комментарии
-	// удалить их
+	// найти в эдиторе все комментарий
+	// удалить комментарий из текста
+	const editor = CatCodingPanel.ed;
+	if (!editor || editor === undefined) { return; }
+
+	// текст редактора
+	const text = editor.document.getText();
+
+	// определяем начало комментария
+	let commentIndex: number|undefined;
+	let commentLength : number;
+	const commentRegexp = new RegExp('<\\?oxy_comment_start(.*?)<\\?oxy_comment_end\\?>','sig');
+
+	let more = false;
+	do {
+		const text = editor.document.getText();
+		const comMatches = [...text.matchAll(commentRegexp)];
+		if(comMatches.length === 0) return;
+		
+		commentIndex = comMatches[0].index;
+		if(commentIndex === undefined) return;
+		commentLength = comMatches[0][0].length;
+
+		await editor.edit(editBuilder => {
+			//if (editor === undefined) { return; }
+			if(commentIndex === undefined) return;
+			let p1 = editor.document.positionAt(commentIndex);
+			let p2 = editor.document.positionAt(commentIndex + commentLength);
+			editBuilder.replace(new vscode.Range(p1, p2), '');
+		});
+		
+		if(comMatches.length>1) more = true;
+		else more = false;
+
+	} while (more);
+
+	await vscode.commands.executeCommand('editor.action.formatDocument');
 
 	// очистить список комментариев
 	CatCodingPanel._coms = [];

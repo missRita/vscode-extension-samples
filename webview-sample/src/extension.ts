@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { workspace, commands } from "vscode";
+import { CommentViewProvider } from './CommnetViewProvider';
 
 
 export interface CommObj {
@@ -13,21 +14,115 @@ export interface CommObj {
 export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('catCoding.OpenCommentsPanel', () => {
-			const comments: CommObj[] = [];
-			comments.push({content: 'com1', id: '123', author: 'Serman', date: new Date(), flag: true});
-			comments.push({content: 'com2', id: '456', author: 'Serman', date: new Date(), flag: false});
-			comments.push({content: 'com3', id: '789', author: 'Dita user', date: new Date(), flag: false});
-			CatCodingPanel.createOrShow(context.extensionUri, comments);
+			let comments: CommObj[] = [];
+			const editor = vscode.window.activeTextEditor;
+			if (!editor || editor === undefined) { return; }
+			comments = GetComments();
+			//comments.push({content: 'com1', id: '123', author: 'Serman', date: new Date(), flag: true});
+			//comments.push({content: 'com2', id: '456', author: 'Serman', date: new Date(), flag: false});
+			//comments.push({content: 'com3', id: '789', author: 'Dita user', date: new Date(), flag: false});
+
+			CatCodingPanel.createOrShow(context.extensionUri, comments, editor);
 		})
 	);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('catCoding.AddComment', () => {
-			if (CatCodingPanel.currentPanel) {
-				CatCodingPanel.currentPanel.Add({content: 'newcom', id: '017', author: 'Dita user', date: new Date(), flag: false});
-			}
+		vscode.commands.registerCommand('catCoding.AddComment', async () => {
+			AddComment();
+			//if (CatCodingPanel.currentPanel) {
+				//AddComment();
+//				
+			//}
 		})
 	);
+
+	const provider = new CommentViewProvider(context.extensionUri);
+
+	// регистрация провайдера
+	//context.subscriptions.push(vscode.window.registerWebviewViewProvider(CommentViewProvider.viewType, provider));
+}
+
+async function AddComment()
+{
+	let editor = vscode.window.activeTextEditor;
+	if (!editor || editor === undefined) { return; }
+
+	let commentText : string|undefined;
+
+	await vscode.window.showInputBox({
+		placeHolder: 'Текст коментария',
+		prompt: 'Добавьте комментарий',
+		validateInput: (val) => {
+			if (val.indexOf('<') !== -1) return 'Служебные символы XML в комментариях запрещены. Используйте &lt;';
+			if (val.indexOf('>') !== -1) return 'Служебные символы XML в комментариях запрещены. Используйте &gt;';
+			if (val.indexOf('"') !== -1) return 'Служебные символы XML в комментариях запрещены. Используйте « или »';
+		},
+	},
+	).then(s => {
+		commentText = s;
+	});
+	if(commentText === undefined) return;
+
+	// текст редактора
+	let text = editor.document.getText();
+
+	// позиции начала и конца выделения/курсора
+	let end = editor.document.offsetAt(editor.selection.active);
+	let start = editor.document.offsetAt(editor.selection.anchor);
+
+	// разворачиваем выделенную область
+	if (end < start)
+	{
+		let tmp = end;
+		end = start;
+		start = tmp;
+	}
+
+	function toIsoString(date : Date) {
+		var tzo = -date.getTimezoneOffset(),
+			dif = tzo >= 0 ? '+' : '-',
+			pad = function(num : number) {
+				return (num < 10 ? '0' : '') + num;
+			};
+	  
+		return date.getFullYear() +
+			pad(date.getMonth() + 1) +
+			pad(date.getDate()) +
+			'T' + pad(date.getHours()) +
+			pad(date.getMinutes()) +
+			pad(date.getSeconds()) +
+			dif + pad(Math.floor(Math.abs(tzo) / 60)) +
+			pad(Math.abs(tzo) % 60);
+	  }
+
+	const author = 'Serman';//getAuthor();
+	const date = new Date();
+	let targetSub = text.substring(start, end);
+	let id = 'FGVH7VH4g454vhTHVr';//uuid.v4();
+
+	if(CatCodingPanel.currentPanel !== undefined) {
+	CatCodingPanel.currentPanel.Add({content: commentText, id: id, author: author, date: new Date(), flag: false});
+	}
+
+	let comment = `<?oxy_comment_start author="${author}" timestamp="${toIsoString(date)}" comment="${commentText}" id="${id}"?>${targetSub}<?oxy_comment_end?>`;
+
+	editor.edit(editBuilder => {
+		if (editor === undefined) { return; }
+		let p1 = editor.document.positionAt(start);
+		let p2 = editor.document.positionAt(end);
+		editBuilder.replace(new vscode.Range(p1, p2), comment);
+	}).then(
+		() => {
+			// выделить (позиция при добавлении сдвигается на длинну комментария)
+			let pos = start + comment.length - 64 - targetSub.length;
+			editor.selections = [new vscode.Selection(editor.document.positionAt(pos), editor.document.positionAt(pos))];
+		}
+	);
+	
+/* 	.then(() => {
+		// форматирование 
+		vscode.commands.executeCommand('editor.action.formatDocument')
+	}); */
 }
 
 function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
@@ -39,6 +134,67 @@ function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
 		// And restrict the webview to only loading content from our extension's `media` directory.
 		localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
 	};
+}
+
+function GetComments(): CommObj[]
+{
+	// eslint-disable-next-line prefer-const
+	let comments: CommObj[] = [];
+
+	const editor = vscode.window.activeTextEditor;
+	if (!editor || editor === undefined) { return []; }
+
+	// текст редактора
+	const text = editor.document.getText();
+
+	const commentRegexp = new RegExp('<\\?oxy_comment_start(.*?)<\\?oxy_comment_end\\?>','sig');
+	const comMatches = [...text.matchAll(commentRegexp)];
+	// фильтруем по id
+	comMatches.forEach((match) => {
+		
+		let m1 = match[0];
+		const r1 = new RegExp('<\\?','g');
+		m1 =  m1.replace(r1, '<');
+		const r2 = new RegExp('\\?>','g');
+		m1 =  m1.replace(r2, '>');
+		const r3 = new RegExp('oxy_comment_end','g');
+		m1 =  m1.replace(r3, '/oxy_comment_start');
+
+		//m1 = '<p>'+m1+'</p>';
+		
+		let fs = require('fs'), 
+		// eslint-disable-next-line @typescript-eslint/no-var-requires
+		xml2js = require('xml2js');
+
+		const parser = new xml2js.Parser();
+
+		//m1='<p><b>1</b>2</p>';
+
+		// парсим DOM
+		parser.parseString(m1, function (err: any, result: any) {
+
+			const a = 0;
+			//let content = result.oxy_comment_start._;
+			let id = result.oxy_comment_start.$.id;
+			let author = result.oxy_comment_start.$.author;
+			let comment = result.oxy_comment_start.$.comment;
+			let flag = result.oxy_comment_start.$.flag;
+			if(flag === undefined) flag = false;
+			let ts = result.oxy_comment_start.$.timestamp as string;
+			ts = ts.substring(0,ts.length-5);
+			let date = new Date();
+
+			//comments.push({content: 'com3', id: '789', author: 'Dita user', date: new Date(), flag: false});
+			comments.push({content: comment, id: id, author: author, date: date, flag: flag});
+
+		});
+
+
+	});
+
+	
+
+	return comments;
 }
 
 /**
@@ -55,14 +211,17 @@ class CatCodingPanel {
 	// хранилище комментов
 	public static _coms: CommObj[] = [];
 	public static _filter: string;
+	public static ed: vscode.TextEditor;
 
 	private readonly _panel: vscode.WebviewPanel;
 	private readonly _extensionUri: vscode.Uri;
 	private _disposables: vscode.Disposable[] = [];
 
-	public static createOrShow(extensionUri: vscode.Uri, comments : CommObj[]) {
+	public static createOrShow(extensionUri: vscode.Uri, comments : CommObj[], editor: vscode.TextEditor) {
 		
 		CatCodingPanel._coms = comments;
+		CatCodingPanel.ed = editor;
+
 		this._filter = '';
 		
 		const column = vscode.window.activeTextEditor
@@ -180,18 +339,12 @@ class CatCodingPanel {
 	}
 
 	private _update(comments : CommObj[]) {
-		const webview = this._panel.webview;
-
-		this._updateForCat(webview, comments);
-	}
-
-	private _updateForCat(webview: vscode.Webview, comments : CommObj[]) {
-		this._panel.webview.html = this._getHtmlForWebview(webview, comments);
+		this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
 
 		this.Load(comments);
 	}
 
-	private _getHtmlForWebview(webview: vscode.Webview, comments: CommObj[]) {
+	private _getHtmlForWebview(webview: vscode.Webview) {
 		// Local path to main script run in the webview
 		const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js');
 
@@ -250,33 +403,29 @@ function Remove(id : string) : void
 
 function Take(id : string) : void
 {
-	// найти в эдиторе комментарий по id
-	// выделить комментарий
-	vscode.commands.executeCommand('selectPrevPageSuggestion').then(() => {
-		//const g = vscode.window.visibleTextEditors;
-		const editor = vscode.window.activeTextEditor;
-		if (!editor || editor === undefined) { return; }
+	// текст редактора
+	const text = CatCodingPanel.ed.document.getText();
 
-		// текст редактора
-		const text = editor.document.getText();
+	const commentRegexp = new RegExp('<\\?oxy_comment_start.*?id="(.*?)"[^>]*?>.*?<\\?oxy_comment_end\\?>', 'sig');
 
-		const commentRegexp = new RegExp('<\\?oxy_comment_start.*?id="(.*?)"[^>]*?>.*?<\\?oxy_comment_end\\?>', 'sig');
+	// опредеяем начало искомого комментария
+	let comIndex: number | undefined;
+	let comLength = 0;
 
-		// опредеяем начало искомого комментария
-		let comIndex: number | undefined;
-		const comMatches = [...text.matchAll(commentRegexp)];
-		// фильтруем по id
-		comMatches.forEach((match) => {
-
+	const comMatches = [...text.matchAll(commentRegexp)];
+	// фильтруем по id
+	comMatches.forEach((match) => {
+		if(match[1] === id) { 
 			comIndex = match.index;
-		});
-
-		if (comIndex === undefined) { return; }
+			comLength = match[0].length;
+		}
 	});
 
+	if (comIndex === undefined) { return; }
 
+	CatCodingPanel.ed.selections = [new vscode.Selection(CatCodingPanel.ed.document.positionAt(comIndex),
+		CatCodingPanel.ed.document.positionAt(comIndex + comLength))];	
 
-	//
 }
 
 function Delete() : void

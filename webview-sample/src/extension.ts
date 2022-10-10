@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
-import { workspace, commands } from "vscode";
+import { workspace, commands, Disposable } from "vscode";
 import { CommentViewProvider } from './CommnetViewProvider';
-
 
 export interface CommObj {
 	content: string;
@@ -18,9 +17,6 @@ export function activate(context: vscode.ExtensionContext) {
 			const editor = vscode.window.activeTextEditor;
 			if (!editor || editor === undefined) { return; }
 			comments = GetComments();
-			//comments.push({content: 'com1', id: '123', author: 'Serman', date: new Date(), flag: true});
-			//comments.push({content: 'com2', id: '456', author: 'Serman', date: new Date(), flag: false});
-			//comments.push({content: 'com3', id: '789', author: 'Dita user', date: new Date(), flag: false});
 
 			CatCodingPanel.createOrShow(context.extensionUri, comments, editor);
 		})
@@ -29,17 +25,27 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('catCoding.AddComment', async () => {
 			AddComment();
-			//if (CatCodingPanel.currentPanel) {
-				//AddComment();
-//				
-			//}
 		})
 	);
 
-	const provider = new CommentViewProvider(context.extensionUri);
+	context.subscriptions.push(change());
+}
 
-	// регистрация провайдера
-	//context.subscriptions.push(vscode.window.registerWebviewViewProvider(CommentViewProvider.viewType, provider));
+function change() : vscode.Disposable
+{
+	let disposables: Disposable[] = [];
+
+	workspace.onDidChangeTextDocument(event => onDidChangeTextDocument(), null, disposables);
+
+	return Disposable.from(...disposables);
+}
+
+function onDidChangeTextDocument()
+{
+	if (CatCodingPanel.currentPanel) {
+		CatCodingPanel._coms = GetComments();
+		CatCodingPanel.currentPanel.Refresh();
+	}
 }
 
 async function AddComment()
@@ -160,15 +166,10 @@ function GetComments(): CommObj[]
 		const r3 = new RegExp('oxy_comment_end','g');
 		m1 =  m1.replace(r3, '/oxy_comment_start');
 
-		//m1 = '<p>'+m1+'</p>';
-		
 		let fs = require('fs'), 
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		xml2js = require('xml2js');
 
 		const parser = new xml2js.Parser();
-
-		//m1='<p><b>1</b>2</p>';
 
 		// парсим DOM
 		parser.parseString(m1, function (err: any, result: any) {
@@ -184,7 +185,6 @@ function GetComments(): CommObj[]
 			ts = ts.substring(0,ts.length-5);
 			let date = new Date();
 
-			//comments.push({content: 'com3', id: '789', author: 'Dita user', date: new Date(), flag: false});
 			comments.push({content: comment, id: id, author: author, date: date, flag: flag});
 		});
 	});
@@ -451,6 +451,7 @@ function Take(id : string) : void
 		if(match[1] === id) { 
 			comIndex = match.index;
 			comLength = match[0].length;
+			return;
 		}
 	});
 
@@ -509,17 +510,73 @@ async function Delete()
 
 function Done(id : string, flag: boolean) : void
 {
-	// найти в эдиторе комментарий по id
-	// добавить атрибут flag
+	// текст редактора
+	const text = CatCodingPanel.ed.document.getText();
+
+	const commentRegexp = new RegExp('<\\?oxy_comment_start.*?id="(.*?)"[^>]*?>.*?<\\?oxy_comment_end\\?>', 'sig');
+
+	// опредеяем начало искомого комментария
+	let comIndex: number | undefined;
+	let comLength = 0;
+	let fullComment : string|undefined;
+
+	const comMatches = [...text.matchAll(commentRegexp)];
+	// фильтруем по id
+	comMatches.forEach((match) => {
+		if(match[1] === id) { 
+			comIndex = match.index;
+			comLength = match[0].length;
+			fullComment = match[0];
+			return;
+		}
+	});
+
+	if (comIndex === undefined || fullComment === undefined) { return; }
 	
-	if(flag)
-	{
-		// удалить атрибут
-	}
-	else
-	{
-		// установить
-	}
+	let m1 = fullComment;
+	const r1 = new RegExp('<\\?','g');
+	m1 =  m1.replace(r1, '<');
+	const r2 = new RegExp('\\?>','g');
+	m1 =  m1.replace(r2, '>');
+	const r3 = new RegExp('oxy_comment_end','g');
+	m1 =  m1.replace(r3, '/oxy_comment_start');
+
+	let fs = require('fs'), 
+	xml2js = require('xml2js');
+
+	const parser = new xml2js.Parser();
+
+	let newcomment;
+
+	// парсим DOM
+	parser.parseString(m1, function (err: any, result: any) {
+
+		const a = 0;
+
+		if(!flag) result.oxy_comment_start.$.flag = 'done';
+		else 
+		{
+			delete result.oxy_comment_start.$.flag;
+		}
+
+		newcomment = result;
+	});
+
+	var builder = new xml2js.Builder();
+	let xml = '';
+	xml = builder.buildObject(newcomment);
+
+	const calsTableRegexp2 = new RegExp('<oxy_comment_start.*?>.*?<\\/oxy_comment_start>', 'sig');
+	// чистим от мусора выходную таблицу
+	let m2 = calsTableRegexp2.exec(xml);
+
+	if (m2 === null || m2 === undefined) { return; }
+
+	// собрать коммент нормально
+
+	// вставить
+
+	// обновить вьюху
 }
 
 function Clear(): void {

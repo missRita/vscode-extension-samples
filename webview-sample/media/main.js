@@ -60,7 +60,7 @@
             a.setAttribute('comid', el.id);
             a.setAttribute('fl', el.flag);
             a.addEventListener('click', () => {
-                vscode.postMessage({ command: 'done', id: el.id. el.flag});
+                vscode.postMessage({ command: 'done', id: el.id, flag: el.flag});
             }); 
     
             let filter = document.createElement('a');

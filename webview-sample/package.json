@@ -18,21 +18,20 @@
 	"activationEvents": [
 		"onCommand:catCoding.OpenCommentsPanel",
 		"onCommand:catCoding.AddComment",
-		"onWebviewPanel:catCoding",
-		"onView:dita-vs-code.Comments"
+		"onWebviewPanel:catCoding"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
 				"command": "catCoding.OpenCommentsPanel",
-				"title": "Start cat coding session",
-				"category": "Открыть комментарии"
+				"title": "Открыть комментарии",
+				"category": "Комментарии"
 			},
 			{
 				"command": "catCoding.AddComment",
-				"title": "Do some refactoring",
-				"category": "Оставить комментарий"
+				"title": "Оставить комментарий",
+				"category": "Комментарии"
 			}
 		],
 		"menus": {
@@ -40,16 +39,6 @@
 				{
 					"command": "catCoding.AddComment",
 					"group": "z_commands"
-				}
-			]
-		},
-		"views": {
-			"explorer": [
-				{
-					"when": "resourceLangId == xml",
-					"type": "webview",
-					"id": "dita-vs-code.Comments",
-					"name": "Комментарии"
 				}
 			]
 		}

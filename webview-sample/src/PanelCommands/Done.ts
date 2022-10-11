@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { PrepareToParsing, PrepareToPublishing } from '../CommentHelper';
+import { PrepareToParsing, PrepareToPublishing } from './CommentHelper';
 import { CommentsPanel } from "../CommentsPanel";
 import { GetComments } from '../extension';
 
@@ -64,6 +64,7 @@ export async function Done(id : string, flag: boolean)
 	await editor.edit(editBuilder => {
 		if (comIndex === undefined) { return; }
 		let p1 = editor.document.positionAt(comIndex);
+		if (replaceText === undefined) return;
 		let p2 = editor.document.positionAt(comIndex + replaceText.length);
 		editBuilder.replace(new vscode.Range(p1, p2), replaceText);
 	}).then(() => {

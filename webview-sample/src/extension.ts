@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
-import { workspace, commands, Disposable } from "vscode";
-import { PrepareToParsing } from './CommentHelper';
+import { workspace, Disposable } from "vscode";
+import { PrepareToParsing } from './PanelCommands/CommentHelper';
 import { CommentsPanel } from './CommentsPanel';
+//import * as uuid from 'uuid';
 
 export interface CommObj {
 	content: string;
@@ -13,7 +14,7 @@ export interface CommObj {
 
 export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
-		vscode.commands.registerCommand('Comments.OpenCommentsPanel', () => {
+		vscode.commands.registerCommand('comments.OpenCommentsPanel', () => {
 			// получаем текущий эдитор для передачи 
 			let editor = vscode.window.activeTextEditor;
 			if (!editor || editor === undefined) { return; }
@@ -22,9 +23,9 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
-	context.subscriptions.push(vscode.commands.registerCommand('Comments.AddComment', async () => { AddComment(); }));
+	context.subscriptions.push(vscode.commands.registerCommand('comments.AddComment', async () => { AddComment(); }));
 
-	//context.subscriptions.push(Change());
+	context.subscriptions.push(Change());
 }
 
 function Change() : vscode.Disposable
@@ -110,7 +111,7 @@ async function AddComment()
 	const date = new Date();
 	// выделяемая строка
 	let targetSub = text.substring(start, end);
-	let id = 'FGVH7VH4g454vhTHVr';//uuid.v4();
+	let id = 'rtf53fcfxf';//uuid.v4();
 
 	if(CommentsPanel.currentPanel) {
 		CommentsPanel.currentPanel.Add({content: commentText, id: id, author: author, date: date, flag: false});

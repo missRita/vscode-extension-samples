@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { workspace, commands, Disposable } from "vscode";
 import { CommObj, GetComments } from './extension';
 import { ClearFilter } from './PanelCommands/ClearFilter';
 import { DeleteAll } from './PanelCommands/DeleteAll';
@@ -62,7 +61,7 @@ import { Take } from './PanelCommands/Take';
 
 		// Set the webview's initial html content
 		this._update(CommentsPanel._coms);
-		vscode.window.showWarningMessage('конструктор');
+		//vscode.window.showWarningMessage('конструктор');
 
 		// Listen for when the panel is disposed
 		// This happens when the user closes the panel or when the panel is closed programmatically
@@ -72,7 +71,7 @@ import { Take } from './PanelCommands/Take';
 		this._panel.onDidChangeViewState(
 			e => {
 				if (this._panel.visible) {
-					vscode.window.showWarningMessage('стейт');
+					//vscode.window.showWarningMessage('стейт');
 					CommentsPanel._coms = GetComments();
 					this._update(CommentsPanel._coms);
 				}

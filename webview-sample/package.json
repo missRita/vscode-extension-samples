@@ -1,8 +1,8 @@
 {
-	"name": "cat-coding",
+	"name": "comments",
 	"description": "Cat Coding - A Webview API Sample",
 	"version": "0.0.1",
-	"publisher": "vscode-samples",
+	"publisher": "serman",
 	"private": true,
 	"license": "MIT",
 	"repository": {
@@ -16,20 +16,19 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:Comments.OpenCommentsPanel",
-		"onCommand:Comments.AddComment",
-		"onWebviewPanel:Comments"
+		"onCommand:comments.OpenCommentsPanel",
+		"onCommand:comments.AddComment"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "Comments.OpenCommentsPanel",
+				"command": "comments.OpenCommentsPanel",
 				"title": "Открыть комментарии",
 				"category": "Комментарии"
 			},
 			{
-				"command": "Comments.AddComment",
+				"command": "comments.AddComment",
 				"title": "Оставить комментарий",
 				"category": "Комментарии"
 			}
@@ -37,7 +36,7 @@
 		"menus": {
 			"editor/context": [
 				{
-					"command": "Comments.AddComment",
+					"command": "comments.AddComment",
 					"group": "z_commands"
 				}
 			]
@@ -57,6 +56,7 @@
 		"@typescript-eslint/parser": "^5.19.0",
 		"eslint": "^8.13.0",
 		"typescript": "^4.6.3",
-		"xml2js": "^0.4.23"
+		"xml2js": "^0.4.23",
+		"uuid": "^8.3.2"
 	}
 }

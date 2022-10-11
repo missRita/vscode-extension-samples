@@ -51,7 +51,7 @@
             button.setAttribute('comid', el.id);
             button.style.visibility = 'hidden';
             button.addEventListener('click', () => {
-                vscode.postMessage({ command: 'remove', id: el.id});
+                vscode.postMessage({ command: 'remove_single', id: el.id});
             }); 
             
             let a = document.createElement('a');
@@ -75,14 +75,14 @@
             clearFilter.text = 'сбросить фильтр';
             clearFilter.style.visibility = 'hidden';
             clearFilter.addEventListener('click', () => {
-                vscode.postMessage({ command: 'clear'});
+                vscode.postMessage({ command: 'clear_filter'});
             }); 
     
             const button2 = document.createElement('button');
             button2.innerHTML = 'удалить все';
             button2.style.visibility = 'hidden';
             button2.addEventListener('click', () => {
-                vscode.postMessage({ command: 'delete'});
+                vscode.postMessage({ command: 'delete_all'});
             }); 
             
             //p.setAttribute('comid', id)

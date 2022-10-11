@@ -16,20 +16,20 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:catCoding.OpenCommentsPanel",
-		"onCommand:catCoding.AddComment",
-		"onWebviewPanel:catCoding"
+		"onCommand:Comments.OpenCommentsPanel",
+		"onCommand:Comments.AddComment",
+		"onWebviewPanel:Comments"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "catCoding.OpenCommentsPanel",
+				"command": "Comments.OpenCommentsPanel",
 				"title": "Открыть комментарии",
 				"category": "Комментарии"
 			},
 			{
-				"command": "catCoding.AddComment",
+				"command": "Comments.AddComment",
 				"title": "Оставить комментарий",
 				"category": "Комментарии"
 			}
@@ -37,7 +37,7 @@
 		"menus": {
 			"editor/context": [
 				{
-					"command": "catCoding.AddComment",
+					"command": "Comments.AddComment",
 					"group": "z_commands"
 				}
 			]

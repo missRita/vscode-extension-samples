@@ -72,7 +72,7 @@ import { Take } from './PanelCommands/Take';
 			e => {
 				if (this._panel.visible) {
 					vscode.window.showWarningMessage('стейт');
-					CommentsPanel._coms = GetComments();
+					CommentsPanel._coms = GetComments(true);
 					//this._update(CommentsPanel._coms);
 					this.Refresh();
 				}
@@ -129,8 +129,8 @@ import { Take } from './PanelCommands/Take';
 
 	public Add(com : CommObj) {
 		CommentsPanel._coms.push(com);
-		if(com.author === CommentsPanel._filter)
-			this._panel.webview.postMessage({ command: 'add', content: com.content, id: com.id, author: com.author, flag: com.flag});
+		if(CommentsPanel._filter === '' || com.author === CommentsPanel._filter)
+			this._panel.webview.postMessage({ command: 'add', content: com.content, id: com.id, author: com.author, date: com.date, flag: com.flag});
 	}
 
 	// отправка команды на main.js
@@ -167,12 +167,11 @@ import { Take } from './PanelCommands/Take';
 		// And the uri we use to load this script in the webview
 		const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
 
-				// Local path to css styles
-				const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'st.css');
-				const stylesPathMainPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css');
-		
-				// Uri to load styles into webview
-				const stylesResetUri = webview.asWebviewUri(styleResetPath);
+		// Local path to css styles
+		const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'st.css');
+
+		// Uri to load styles into webview
+		const stylesResetUri = webview.asWebviewUri(styleResetPath);
 
 		// Use a nonce to only allow specific scripts to be run
 		const nonce = getNonce();

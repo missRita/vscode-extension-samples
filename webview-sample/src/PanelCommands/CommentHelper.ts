@@ -36,3 +36,19 @@ export function PrepareToPublishing(xml: string) : string|undefined
 	const r6 = new RegExp('/oxy_comment_start','g');
 	return replaceText.replace(r6, 'oxy_comment_end');
 }
+
+/**
+ * Преобразует строку с датой комментария в строку в формате отображения
+ *
+ *  @param commntDate строка комментария
+ */
+ export function ParceDate(commntDate: string): string
+{
+	let M = commntDate.substring(4,6);
+	let d = commntDate.substring(6,8);
+	let h = commntDate.substring(9,11);
+	let m = commntDate.substring(11,13);
+
+	return `${d}.${M} ${h}:${m}`;
+
+}

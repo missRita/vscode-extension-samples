@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { workspace, Disposable } from "vscode";
-import { PrepareToParsing } from './PanelCommands/CommentHelper';
+import { ParceDate, PrepareToParsing } from './PanelCommands/CommentHelper';
 import { CommentsPanel } from './CommentsPanel';
 //import * as uuid from 'uuid';
 
@@ -8,7 +8,7 @@ export interface CommObj {
 	content: string;
 	id: string;
 	author : string;
-	date: Date;
+	date: string;
 	flag: boolean;
 }
 
@@ -19,7 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
 			let editor = vscode.window.activeTextEditor;
 			if (!editor || editor === undefined) { return; }
 			// создаем панель комментариев
-			CommentsPanel.createOrShow(context.extensionUri, GetComments(), editor);
+			CommentsPanel.createOrShow(context.extensionUri, GetComments(true), editor);
 		})
 	);
 
@@ -40,7 +40,7 @@ function Change() : vscode.Disposable
 function onDidChangeTextDocument()
 {
 	if (CommentsPanel.currentPanel) {
-		CommentsPanel._coms = GetComments();
+		CommentsPanel._coms = GetComments(true);
 		CommentsPanel.currentPanel.Refresh();
 	}
 }
@@ -114,7 +114,8 @@ async function AddComment()
 	let id = 'rtf53fcfxf';//uuid.v4();
 
 	if(CommentsPanel.currentPanel) {
-		CommentsPanel.currentPanel.Add({content: commentText, id: id, author: author, date: date, flag: false});
+		CommentsPanel.currentPanel.Add({content: commentText, id: id, author: author,
+			date: `${date.getDay()}.${date.getMonth()} ${date.getHours()}:${date.getMinutes()}`, flag: false});
 	}
 
 	let comment = `<?oxy_comment_start author="${author}" timestamp="${toIsoString(date)}" comment="${commentText}" id="${id}"?>${targetSub}<?oxy_comment_end?>`;
@@ -130,13 +131,17 @@ async function AddComment()
 /**
  * Получение всех комментариев из текущего реедактора
  *
+ * @param activeEditor флаг использования текущего окна
  */
-export function GetComments(): CommObj[]
+export function GetComments(activeEditor: boolean): CommObj[]
 {
 	let comments: CommObj[] = [];
 
-	const editor = vscode.window.activeTextEditor;
-	if (!editor || editor === undefined) { return []; }
+	let editor;
+	if(activeEditor) editor = vscode.window.activeTextEditor;
+	else editor = CommentsPanel.currentEditor;
+
+	if (!editor || editor === undefined)return [];
 
 	// текст редактора
 	const text = editor.document.getText();
@@ -163,8 +168,7 @@ export function GetComments(): CommObj[]
 			let flag = result.oxy_comment_start.$.flag;
 			if(flag === undefined) flag = false;
 			let ts = result.oxy_comment_start.$.timestamp as string;
-			ts = ts.substring(0,ts.length-5);
-			let date = new Date();
+			let date = ParceDate(ts);			
 
 			comments.push({content: comment, id: id, author: author, date: date, flag: flag});
 		});

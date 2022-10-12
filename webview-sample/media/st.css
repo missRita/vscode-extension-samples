@@ -2,52 +2,67 @@ ul
 {
 list-style: none;
 padding: 0; /* Убираем поля */
-margin-left: 20px; /* Отступ слева */
+margin-left: 0px; /* Отступ слева */
 }
 li
 {
 padding-bottom: 50px;
+
 }
 
 #block0 {
-max-width: 300px;
+max-width: 350px;
+min-width: 350px;
 }
 
 #block1 {
 float: left;
 display: block;
-width: 250px;
-background-color:red;
+width: 275px;
+text-decoration: solid;
+
 }
 
 #block2 {
 float: right;
 display: block;
-width: 50px;
-background-color:yellow;
+width: 75px;
+color: gray;
+text-align: right;
 }
 
 #block3 {
 float: top;
 display: block;
-width: 300px;
-background-color:blue;
+width: 350px;
 }
 
 #block4 {
 float: left;
 display: block;
-width: 50px;
-background-color:green;
+width: 100px;
 }
+
 #block5 {
 float: left;
 display: block;
 width: 250px;
-background-color:pink;
+
   text-align: right;
 }
 
-#p3 {
-text-align: right 
+#a1{
+color: cadetblue;
+padding-left: 20px;
+}
+
+#a2{
+color: cadetblue;
+text-decoration: underline;
+}
+
+#a3{
+color: cadetblue;
+text-decoration: underline;
+padding-left: 10px;
 }

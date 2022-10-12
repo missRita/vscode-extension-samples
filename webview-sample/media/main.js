@@ -38,35 +38,14 @@
             }); 
     
             let div = document.createElement('div');
-    
-            let p1 = document.createElement('p');
-            p1.innerHTML = el.content;
-    
-            let p2 = document.createElement('p');
-            p2.innerHTML = el.author;
-    
-            let p3 = document.createElement('p');
-            p3.innerHTML = el.date;
-    
-            const button = document.createElement('button');
-            button.innerHTML = 'удалить';
-            button.setAttribute('comid', el.id);
-            button.style.visibility = 'hidden';
-            button.addEventListener('click', () => {
-                vscode.postMessage({ command: 'remove_single', id: el.id});
-            }); 
+            div.id = 'block0';            
+
+            let div1 = document.createElement('div');
+            div1.id = 'block1';
+            div1.innerText = el.author;
             
-            let a = document.createElement('a');
-            a.classList.add("mystyle");
-            if(!el.flag) a.text = 'Готово';
-            else a.text = 'Не готово';
-            a.setAttribute('comid', el.id);
-            a.setAttribute('fl', el.flag);
-            a.addEventListener('click', () => {
-                vscode.postMessage({ command: 'done', id: el.id, flag: el.flag});
-            }); 
-    
             let filter = document.createElement('a');
+            filter.id = 'a1';
             if(globalFilter === '') filter.text = 'фильтровать';
             else filter.text = 'сбросить';
             filter.setAttribute('aut', el.author);
@@ -79,47 +58,70 @@
                 else
                 vscode.postMessage({ command: 'clear_filter'});
             }); 
+
+            let div2 = document.createElement('div');
+            div2.id = 'block2';
+            div2.innerHTML = el.date.toString();
     
-            // let clearFilter = document.createElement('a');
-            // clearFilter.text = 'сбросить фильтр';
-            // clearFilter.style.visibility = 'hidden';
-            // clearFilter.addEventListener('click', () => {
-            //     vscode.postMessage({ command: 'clear_filter'});
-            // });  
-    
-            const button2 = document.createElement('button');
-            button2.innerHTML = 'удалить все';
-            button2.style.visibility = 'hidden';
-            button2.addEventListener('click', () => {
+            let div3 = document.createElement('div');
+            div3.id = 'block3';
+            div3.innerHTML = el.content;    
+
+            let div4 = document.createElement('div');
+            div4.id = 'block4';
+
+            let a = document.createElement('a');
+            if(!el.flag) a.text = 'Готово';
+            else a.text = 'Не готово';
+            a.setAttribute('comid', el.id);
+            a.setAttribute('fl', el.flag);
+            a.addEventListener('click', () => {
+                vscode.postMessage({ command: 'done', id: el.id, flag: el.flag});
+            }); 
+
+            let div5 = document.createElement('div');
+            div5.id = 'block5';
+
+            const a2 = document.createElement('a');
+            a2.id = 'a2';
+            a2.text = 'удалить';
+            a2.setAttribute('comid', el.id);
+            a2.style.visibility = 'hidden';
+            a2.addEventListener('click', () => {
+                vscode.postMessage({ command: 'remove_single', id: el.id});
+            }); 
+                
+            const a3 = document.createElement('a');
+            a3.id = 'a3';
+            a3.text = 'удалить все';
+            a3.style.visibility = 'hidden';
+            a3.addEventListener('click', () => {
                 vscode.postMessage({ command: 'delete_all'});
             }); 
             
-            //p.setAttribute('comid', id)
-            div.appendChild(p1);
-            div.appendChild(p2);
-            div.appendChild(p3);
-            div.appendChild(a);
-    
-            div.appendChild(button);
-            div.appendChild(filter);
-            //div.appendChild(clearFilter);
-    
-            div.appendChild(button2);
+            div1.appendChild(filter);
+            div4.appendChild(a);
+            div5.appendChild(a2);
+            div5.appendChild(a3);
+
+            div.appendChild(div1);
+            div.appendChild(div2);
+            div.appendChild(div3);
+            div.appendChild(div4);    
+            div.appendChild(div5);
     
             li.appendChild(div);
     
             ul?.appendChild(li);
     
             div.addEventListener('mouseover', () => {
-                button2.style.visibility = 'visible';
-                button.style.visibility = 'visible';
-                //clearFilter.style.visibility = 'visible';
+                a2.style.visibility = 'visible';
+                a3.style.visibility = 'visible';
                 filter.style.visibility = 'visible';
             }); 
             div.addEventListener('mouseout', () => {
-                button2.style.visibility = 'hidden';
-                button.style.visibility = 'hidden';
-                //clearFilter.style.visibility = 'hidden';
+                a2.style.visibility = 'hidden';
+                a3.style.visibility = 'hidden';
                 filter.style.visibility = 'hidden';
             }); 
             //
@@ -143,81 +145,93 @@
         }); 
 
         let div = document.createElement('div');
+        div.id = 'block0';            
 
-        let p1 = document.createElement('p');
-        p1.innerHTML = content;
-
-        let p2 = document.createElement('p');
-        p2.innerHTML = author;
-
-        let p3 = document.createElement('p');
-        p3.innerHTML = date;
-
-        const button = document.createElement('button');
-        button.innerHTML = 'удалить';
-        button.setAttribute('comid', id);
-        button.style.visibility = 'hidden';
-        button.addEventListener('click', () => {
-            vscode.postMessage({ command: 'remove', id: id});
-        }); 
+        let div1 = document.createElement('div');
+        div1.id = 'block1';
+        div1.innerText = author;
         
-        let a = document.createElement('a');
-        a.text = 'Готово';
-        a.setAttribute('comid', id);
-        a.addEventListener('click', () => {
-            vscode.postMessage({ command: 'done', id: id});
-        }); 
-
         let filter = document.createElement('a');
-        filter.text = 'Показывать только этого автора';
+        filter.id = 'a1';
+        if(globalFilter === '') filter.text = 'фильтровать';
+        else filter.text = 'сбросить';
         filter.setAttribute('aut', author);
         filter.style.visibility = 'hidden';
         filter.addEventListener('click', () => {
-            vscode.postMessage({ command: 'filter', author: author});
+            if(globalFilter === '') {
+                vscode.postMessage({ command: 'filter', author: author});
+                globalFilter = author;
+            }
+            else
+            vscode.postMessage({ command: 'clear_filter'});
         }); 
 
-        // let clearFilter = document.createElement('a');
-        // clearFilter.text = 'сбросить фильтр';
-        // clearFilter.style.visibility = 'hidden';
-        // clearFilter.addEventListener('click', () => {
-        //     vscode.postMessage({ command: 'clear'});
-        // }); 
+        let div2 = document.createElement('div');
+        div2.id = 'block2';
+        div2.innerHTML = date;
 
-        const button2 = document.createElement('button');
-        button2.innerHTML = 'удалить все';
-        button2.style.visibility = 'hidden';
-        button2.addEventListener('click', () => {
-            vscode.postMessage({ command: 'delete'});
+        let div3 = document.createElement('div');
+        div3.id = 'block3';
+        div3.innerHTML = content;
+
+        let div4 = document.createElement('div');
+        div4.id = 'block4';
+
+        let a = document.createElement('a');
+        if(!flag) a.text = 'Готово';
+        else a.text = 'Не готово';
+        a.setAttribute('comid', id);
+        a.setAttribute('fl', flag.toString());
+        a.addEventListener('click', () => {
+            vscode.postMessage({ command: 'done', id: id, flag: flag});
+        }); 
+
+        let div5 = document.createElement('div');
+        div5.id = 'block5';
+
+        const a2 = document.createElement('a');
+        a2.id = 'a2';
+        a2.text = 'удалить';
+        a2.setAttribute('comid', id);
+        a2.style.visibility = 'hidden';
+        a2.addEventListener('click', () => {
+            vscode.postMessage({ command: 'remove_single', id: id});
+        }); 
+            
+        const a3 = document.createElement('a');
+        a3.id = 'a3';
+        a3.text = 'удалить все';
+        a3.style.visibility = 'hidden';
+        a3.addEventListener('click', () => {
+            vscode.postMessage({ command: 'delete_all'});
         }); 
         
-        //p.setAttribute('comid', id)
-        div.appendChild(p1);
-        div.appendChild(p2);
-        div.appendChild(p3);
-        div.appendChild(a);
+        div1.appendChild(filter);
+        div4.appendChild(a);
+        div5.appendChild(a2);
+        div5.appendChild(a3);
 
-        div.appendChild(button);
-        div.appendChild(filter);
-        //div.appendChild(clearFilter);
-
-        div.appendChild(button2);
+        div.appendChild(div1);
+        div.appendChild(div2);
+        div.appendChild(div3);
+        div.appendChild(div4);    
+        div.appendChild(div5);
 
         li.appendChild(div);
 
         ul?.appendChild(li);
 
         div.addEventListener('mouseover', () => {
-            button2.style.visibility = 'visible';
-            button.style.visibility = 'visible';
-            //clearFilter.style.visibility = 'visible';
+            a2.style.visibility = 'visible';
+            a3.style.visibility = 'visible';
             filter.style.visibility = 'visible';
         }); 
         div.addEventListener('mouseout', () => {
-            button2.style.visibility = 'hidden';
-            button.style.visibility = 'hidden';
-            //clearFilter.style.visibility = 'hidden';
+            a2.style.visibility = 'hidden';
+            a3.style.visibility = 'hidden';
             filter.style.visibility = 'hidden';
         }); 
+        //
     }
 
 }());

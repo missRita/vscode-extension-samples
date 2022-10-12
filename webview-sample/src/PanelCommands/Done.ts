@@ -72,7 +72,7 @@ export async function Done(id : string, flag: boolean)
 	});
 
 	if (CommentsPanel.currentPanel) {
-		CommentsPanel._coms = GetComments();
+		CommentsPanel._coms = GetComments(false);
 		CommentsPanel.currentPanel.Refresh();
 	}
 }

@@ -14,7 +14,7 @@ export async function Done(id : string, flag: boolean)
 	// текст редактора
 	const text = CommentsPanel.currentEditor.document.getText();
 
-	const commentRegexp = new RegExp('<\\?oxy_comment_start.*?id="(.*?)"[^>]*?>.*?<\\?oxy_comment_end\\?>', 'sig');
+	const commentRegexp = new RegExp('<\\?oxy_comment_start.*?id="(.*?)"[^>]*?>.*?<\\?oxy_comment_end\\s*\\?>', 'sig');
 
 	// определяем начало искомого комментария
 	let comIndex: number | undefined;

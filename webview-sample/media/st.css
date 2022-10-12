@@ -1,0 +1,53 @@
+ul
+{
+list-style: none;
+padding: 0; /* Убираем поля */
+margin-left: 20px; /* Отступ слева */
+}
+li
+{
+padding-bottom: 50px;
+}
+
+#block0 {
+max-width: 300px;
+}
+
+#block1 {
+float: left;
+display: block;
+width: 250px;
+background-color:red;
+}
+
+#block2 {
+float: right;
+display: block;
+width: 50px;
+background-color:yellow;
+}
+
+#block3 {
+float: top;
+display: block;
+width: 300px;
+background-color:blue;
+}
+
+#block4 {
+float: left;
+display: block;
+width: 50px;
+background-color:green;
+}
+#block5 {
+float: left;
+display: block;
+width: 250px;
+background-color:pink;
+  text-align: right;
+}
+
+#p3 {
+text-align: right 
+}

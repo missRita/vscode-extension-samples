@@ -61,7 +61,7 @@ import { Take } from './PanelCommands/Take';
 
 		// Set the webview's initial html content
 		this._update(CommentsPanel._coms);
-		//vscode.window.showWarningMessage('конструктор');
+		vscode.window.showWarningMessage('конструктор');
 
 		// Listen for when the panel is disposed
 		// This happens when the user closes the panel or when the panel is closed programmatically
@@ -71,9 +71,10 @@ import { Take } from './PanelCommands/Take';
 		this._panel.onDidChangeViewState(
 			e => {
 				if (this._panel.visible) {
-					//vscode.window.showWarningMessage('стейт');
+					vscode.window.showWarningMessage('стейт');
 					CommentsPanel._coms = GetComments();
-					this._update(CommentsPanel._coms);
+					//this._update(CommentsPanel._coms);
+					this.Refresh();
 				}
 			},
 			null,
@@ -115,6 +116,7 @@ import { Take } from './PanelCommands/Take';
 		);
 	}
 
+	// фильтруем внутренние коммментарии, обновляем
 	public Refresh()
 	{
 		let arr = CommentsPanel._coms;
@@ -127,15 +129,18 @@ import { Take } from './PanelCommands/Take';
 
 	public Add(com : CommObj) {
 		CommentsPanel._coms.push(com);
-		this._panel.webview.postMessage({ command: 'add', content: com.content, id: com.id, author: com.author, flag: com.flag});
+		if(com.author === CommentsPanel._filter)
+			this._panel.webview.postMessage({ command: 'add', content: com.content, id: com.id, author: com.author, flag: com.flag});
 	}
 
+	// отправка команды на main.js
 	public Load(coms: CommObj[]) {
-		this._panel.webview.postMessage({ command: 'allCommnets', they: coms});
+		this._panel.webview.postMessage({ command: 'allCommnets', they: coms, filter: CommentsPanel._filter});
 	}
 
 	public dispose() {
 		CommentsPanel.currentPanel = undefined;
+		CommentsPanel._coms = [];
 
 		// Clean up our resources
 		this._panel.dispose();
@@ -148,6 +153,7 @@ import { Take } from './PanelCommands/Take';
 		}
 	}
 
+	// обновляем html+main.js
 	private _update(comments : CommObj[]) {
 		this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
 
@@ -160,6 +166,13 @@ import { Take } from './PanelCommands/Take';
 
 		// And the uri we use to load this script in the webview
 		const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
+
+				// Local path to css styles
+				const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'st.css');
+				const stylesPathMainPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css');
+		
+				// Uri to load styles into webview
+				const stylesResetUri = webview.asWebviewUri(styleResetPath);
 
 		// Use a nonce to only allow specific scripts to be run
 		const nonce = getNonce();
@@ -176,6 +189,8 @@ import { Take } from './PanelCommands/Take';
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+				<link href="${stylesResetUri}" rel="stylesheet">
 
 				<title>Cat Coding</title>
 			</head>

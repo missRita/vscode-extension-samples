@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('comments.AddComment', async () => { AddComment(); }));
 
-	context.subscriptions.push(Change());
+	//context.subscriptions.push(Change());
 }
 
 function Change() : vscode.Disposable
@@ -141,7 +141,7 @@ export function GetComments(): CommObj[]
 	// текст редактора
 	const text = editor.document.getText();
 
-	const commentRegexp = new RegExp('<\\?oxy_comment_start(.*?)<\\?oxy_comment_end\\?>','sig');
+	const commentRegexp = new RegExp('<\\?oxy_comment_start(.*?)<\\?oxy_comment_end\\s*\\?>','sig');
 	const comMatches = [...text.matchAll(commentRegexp)];
 
 	comMatches.forEach((match) => {

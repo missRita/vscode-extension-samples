@@ -18,6 +18,9 @@ body {
 ol,
 ul {
 	padding-left: var(--container-padding);
+	color: blue;
+	list-style: square;
+
 }
 
 body > *,

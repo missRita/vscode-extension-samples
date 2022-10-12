@@ -13,7 +13,7 @@ export async function DeleteAll()
 	// определяем начало комментария
 	let commentIndex: number|undefined;
 	let commentLength : number;
-	const commentRegexp = new RegExp('<\\?oxy_comment_start(.*?)<\\?oxy_comment_end\\?>','sig');
+	const commentRegexp = new RegExp('<\\?oxy_comment_start(.*?)<\\?oxy_comment_end\\s*\\?>','sig');
 
 	// флаг продолжения поиска комментариев
 	let more = false;

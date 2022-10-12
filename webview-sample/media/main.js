@@ -5,6 +5,7 @@
     const vscode = acquireVsCodeApi();
 
     const counter = /** @type {HTMLElement} */ (document.getElementById('lines-of-code-counter'));
+    let globalFilter = '';
 
     // Handle messages sent from the extension to the webview
     window.addEventListener('message', event => {
@@ -15,15 +16,16 @@
                 Add(message.content, message.id, message.author, message.date, message.flag);
                 break;
             case 'allCommnets':
-                Load(message.they);
+                Load(message.they, message.filter);
                 break;
         }
     });
 
      // @ts-ignore
-     function Load(they) {
+     function Load(they, fil) {
+        globalFilter = fil;
+
         let ul = document.getElementById('coms');
-        //ul?..setProperty('listStyle', 'none');
         
          for (let index = 0; index < they.length; index++) {
             const el = they[index];
@@ -55,6 +57,7 @@
             }); 
             
             let a = document.createElement('a');
+            a.classList.add("mystyle");
             if(!el.flag) a.text = 'Готово';
             else a.text = 'Не готово';
             a.setAttribute('comid', el.id);
@@ -64,19 +67,25 @@
             }); 
     
             let filter = document.createElement('a');
-            filter.text = 'Показывать только этого автора';
+            if(globalFilter === '') filter.text = 'фильтровать';
+            else filter.text = 'сбросить';
             filter.setAttribute('aut', el.author);
             filter.style.visibility = 'hidden';
             filter.addEventListener('click', () => {
-                vscode.postMessage({ command: 'filter', author: el.author});
-            }); 
-    
-            let clearFilter = document.createElement('a');
-            clearFilter.text = 'сбросить фильтр';
-            clearFilter.style.visibility = 'hidden';
-            clearFilter.addEventListener('click', () => {
+                if(globalFilter === '') {
+                    vscode.postMessage({ command: 'filter', author: el.author});
+                    globalFilter = el.author;
+                }
+                else
                 vscode.postMessage({ command: 'clear_filter'});
             }); 
+    
+            // let clearFilter = document.createElement('a');
+            // clearFilter.text = 'сбросить фильтр';
+            // clearFilter.style.visibility = 'hidden';
+            // clearFilter.addEventListener('click', () => {
+            //     vscode.postMessage({ command: 'clear_filter'});
+            // });  
     
             const button2 = document.createElement('button');
             button2.innerHTML = 'удалить все';
@@ -93,7 +102,7 @@
     
             div.appendChild(button);
             div.appendChild(filter);
-            div.appendChild(clearFilter);
+            //div.appendChild(clearFilter);
     
             div.appendChild(button2);
     
@@ -104,13 +113,13 @@
             div.addEventListener('mouseover', () => {
                 button2.style.visibility = 'visible';
                 button.style.visibility = 'visible';
-                clearFilter.style.visibility = 'visible';
+                //clearFilter.style.visibility = 'visible';
                 filter.style.visibility = 'visible';
             }); 
             div.addEventListener('mouseout', () => {
                 button2.style.visibility = 'hidden';
                 button.style.visibility = 'hidden';
-                clearFilter.style.visibility = 'hidden';
+                //clearFilter.style.visibility = 'hidden';
                 filter.style.visibility = 'hidden';
             }); 
             //
@@ -167,12 +176,12 @@
             vscode.postMessage({ command: 'filter', author: author});
         }); 
 
-        let clearFilter = document.createElement('a');
-        clearFilter.text = 'сбросить фильтр';
-        clearFilter.style.visibility = 'hidden';
-        clearFilter.addEventListener('click', () => {
-            vscode.postMessage({ command: 'clear'});
-        }); 
+        // let clearFilter = document.createElement('a');
+        // clearFilter.text = 'сбросить фильтр';
+        // clearFilter.style.visibility = 'hidden';
+        // clearFilter.addEventListener('click', () => {
+        //     vscode.postMessage({ command: 'clear'});
+        // }); 
 
         const button2 = document.createElement('button');
         button2.innerHTML = 'удалить все';
@@ -189,7 +198,7 @@
 
         div.appendChild(button);
         div.appendChild(filter);
-        div.appendChild(clearFilter);
+        //div.appendChild(clearFilter);
 
         div.appendChild(button2);
 
@@ -200,13 +209,13 @@
         div.addEventListener('mouseover', () => {
             button2.style.visibility = 'visible';
             button.style.visibility = 'visible';
-            clearFilter.style.visibility = 'visible';
+            //clearFilter.style.visibility = 'visible';
             filter.style.visibility = 'visible';
         }); 
         div.addEventListener('mouseout', () => {
             button2.style.visibility = 'hidden';
             button.style.visibility = 'hidden';
-            clearFilter.style.visibility = 'hidden';
+            //clearFilter.style.visibility = 'hidden';
             filter.style.visibility = 'hidden';
         }); 
     }

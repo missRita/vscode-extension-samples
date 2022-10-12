@@ -17,7 +17,7 @@ export function RemoveSingle(id : string)
 	// опредеяем начало и длину комментария
 	let commentIndex: number | undefined;
 	let commentLength : number;
-	const commentRegexp = new RegExp('<\\?oxy_comment_start(.*?)<\\?oxy_comment_end\\?>','sig');
+	const commentRegexp = new RegExp('<\\?oxy_comment_start(.*?)<\\?oxy_comment_end\\s*\\?>','sig');
 	const commentIdRegexp = new RegExp('id="(.*?)"');
 	const comMatches = [...text.matchAll(commentRegexp)];
 

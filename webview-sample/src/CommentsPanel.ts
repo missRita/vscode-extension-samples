@@ -6,8 +6,9 @@ import { Done } from './PanelCommands/Done';
 import { Filter } from './PanelCommands/Filter';
 import { RemoveSingle } from './PanelCommands/RemoveSingle';
 import { Take } from './PanelCommands/Take';
+import * as path from 'path';
 
- export class CommentsPanel {
+export class CommentsPanel {
 
 	// панель может быть только одна
 	public static currentPanel: CommentsPanel | undefined;
@@ -22,6 +23,9 @@ import { Take } from './PanelCommands/Take';
 	private readonly _panel: vscode.WebviewPanel;
 	private readonly _extensionUri: vscode.Uri;
 	private _disposables: vscode.Disposable[] = [];
+
+	public static icon1 : vscode.Uri;
+	public static icon2 : vscode.Uri;
 
 	public static createOrShow(extensionUri: vscode.Uri, comments : CommObj[], editor: vscode.TextEditor) {
 		
@@ -58,6 +62,12 @@ import { Take } from './PanelCommands/Take';
 	private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, comments : CommObj[]) {
 		this._panel = panel;
 		this._extensionUri = extensionUri;
+
+		// иконка
+		const icon_uri1 = vscode.Uri.joinPath(this._extensionUri, 'media', 'green_tick.png');
+		CommentsPanel.icon1 = panel.webview.asWebviewUri(icon_uri1);
+		const icon_uri2 = vscode.Uri.joinPath(this._extensionUri, 'media', 'gray_tick.png');
+		CommentsPanel.icon2 = panel.webview.asWebviewUri(icon_uri2);
 
 		// Set the webview's initial html content
 		this._update(CommentsPanel._coms);
@@ -130,12 +140,14 @@ import { Take } from './PanelCommands/Take';
 	public Add(com : CommObj) {
 		CommentsPanel._coms.push(com);
 		if(CommentsPanel._filter === '' || com.author === CommentsPanel._filter)
-			this._panel.webview.postMessage({ command: 'add', content: com.content, id: com.id, author: com.author, date: com.date, flag: com.flag});
+			this._panel.webview.postMessage({ command: 'add', content: com.content, id: com.id, author: com.author, 
+			date: com.date, flag: com.flag, icon1: CommentsPanel.icon1.toString(), icon2: CommentsPanel.icon2.toString()});
 	}
 
 	// отправка команды на main.js
 	public Load(coms: CommObj[]) {
-		this._panel.webview.postMessage({ command: 'allCommnets', they: coms, filter: CommentsPanel._filter});
+		this._panel.webview.postMessage({ command: 'allCommnets', they: coms, filter: CommentsPanel._filter, 
+			icon1: CommentsPanel.icon1.toString(), icon2: CommentsPanel.icon2.toString()});
 	}
 
 	public dispose() {
@@ -194,7 +206,7 @@ import { Take } from './PanelCommands/Take';
 				<title>Cat Coding</title>
 			</head>
 			<body>
-				<h1>Комментарии</h1>
+				<h2>Комментарии</h2>
 				<div>
 					<ul id="coms">
 					</ul>

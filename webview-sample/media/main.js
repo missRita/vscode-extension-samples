@@ -13,16 +13,16 @@
         switch (message.command) {
             case 'add':
                 // добавить в отображение комментарий
-                Add(message.content, message.id, message.author, message.date, message.flag);
+                Add(message.content, message.id, message.author, message.date, message.flag, message.icon1, message.icon2);
                 break;
             case 'allCommnets':
-                Load(message.they, message.filter);
+                Load(message.they, message.filter, message.icon1, message.icon2);
                 break;
         }
     });
 
      // @ts-ignore
-     function Load(they, fil) {
+     function Load(they, fil, icon1, icon2) {
         globalFilter = fil;
 
         let ul = document.getElementById('coms');
@@ -69,15 +69,16 @@
 
             let div4 = document.createElement('div');
             div4.id = 'block4';
-
-            let a = document.createElement('a');
-            if(!el.flag) a.text = 'Готово';
-            else a.text = 'Не готово';
-            a.setAttribute('comid', el.id);
-            a.setAttribute('fl', el.flag);
-            a.addEventListener('click', () => {
+        
+            let img = document.createElement('img');
+            img.id = 'img1';
+            if(!el.flag) img.src = icon2;
+            else img.src = icon1;
+            img.setAttribute('comid', el.id);
+            img.setAttribute('fl', el.flag);
+            img.addEventListener('click', () => {
                 vscode.postMessage({ command: 'done', id: el.id, flag: el.flag});
-            }); 
+            });
 
             let div5 = document.createElement('div');
             div5.id = 'block5';
@@ -100,7 +101,7 @@
             }); 
             
             div1.appendChild(filter);
-            div4.appendChild(a);
+            div4.appendChild(img);
             div5.appendChild(a2);
             div5.appendChild(a3);
 
@@ -134,8 +135,10 @@
     * @param {string} author
     * @param {string} date
     * @param {boolean} flag
+    * @param {string} icon1
+    * @param {string} icon2
     */
-    function Add(content, id, author, date, flag) {
+    function Add(content, id, author, date, flag, icon1, icon2) {
         const ul = document.getElementById('coms');
         
         let li = document.createElement('li');
@@ -177,14 +180,15 @@
         let div4 = document.createElement('div');
         div4.id = 'block4';
 
-        let a = document.createElement('a');
-        if(!flag) a.text = 'Готово';
-        else a.text = 'Не готово';
-        a.setAttribute('comid', id);
-        a.setAttribute('fl', flag.toString());
-        a.addEventListener('click', () => {
+        let img = document.createElement('img');
+        img.id = 'img1';
+        if(!flag) img.src = icon2;
+        else img.src = icon1;
+        img.setAttribute('comid', id);
+        img.setAttribute('fl', flag.toString());
+        img.addEventListener('click', () => {
             vscode.postMessage({ command: 'done', id: id, flag: flag});
-        }); 
+        });
 
         let div5 = document.createElement('div');
         div5.id = 'block5';
@@ -207,7 +211,7 @@
         }); 
         
         div1.appendChild(filter);
-        div4.appendChild(a);
+        div4.appendChild(img);
         div5.appendChild(a2);
         div5.appendChild(a3);
 

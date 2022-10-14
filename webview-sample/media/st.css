@@ -7,20 +7,24 @@ margin-left: 0px; /* Отступ слева */
 li
 {
 padding-bottom: 50px;
+max-width: 350px;
+min-width: 350px;
+}
 
+#img1{
+  width: 16px;
 }
 
 #block0 {
-max-width: 350px;
-min-width: 350px;
+  border-top: 1px solid gray;
 }
 
 #block1 {
 float: left;
 display: block;
 width: 275px;
-text-decoration: solid;
-
+font-weight: bold;
+padding-bottom: 10px;
 }
 
 #block2 {
@@ -29,12 +33,14 @@ display: block;
 width: 75px;
 color: gray;
 text-align: right;
+padding-bottom: 10px;
 }
 
 #block3 {
 float: top;
 display: block;
 width: 350px;
+padding-bottom: 10px;
 }
 
 #block4 {
@@ -54,6 +60,7 @@ width: 250px;
 #a1{
 color: cadetblue;
 padding-left: 20px;
+font-weight: normal;
 }
 
 #a2{

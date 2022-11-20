@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as uuid from 'uuid';
 
-export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
+export class MapProvider implements vscode.TreeDataProvider<Dependency> {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
@@ -21,20 +20,13 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 		return element;
 	}
 
-// TODO
-/*
-кнопку обновления оставить на будущее 
-12345678901234567890123456789012.. 40->|
-описать структуру json
- */
 	getChildren(element?: Dependency): Thenable<Dependency[]> {
 		if(element === undefined)
 		{
-			const b = this.Eprst2(undefined);
+			const b = this.TreeGetChilds(undefined);
 			return Promise.resolve(b);
 		}
-		//const a = this.Eprst2(element.label);
-		const a = this.Eprst2(element.gid);
+		const a = this.TreeGetChilds(element.gid);
 		return Promise.resolve(a);
 
 /* 
@@ -45,7 +37,7 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 */
 	}
 
-	private Eprst2(name: string) : Dependency[]
+	private TreeGetChilds(name: string) : Dependency[]
 	{
 		const result : Dependency[] = [];
 		
@@ -60,7 +52,6 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 			// первый уровень - ГК
 			list = tree3.elems;
 			iconType = 0;
-			//id = uuid.v4();
 		}
 		
 		else 
@@ -78,7 +69,6 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 					const el = somelist[i];
 					if (el.id === name) {
 						list =  el.elems;
-						//id = uuid.v4();
 					}
 					else {
 						go(el.elems);
@@ -96,7 +86,7 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 			const dep = new Dependency(element.name, element.path, element.type, element.id,
 				element.type === 3 ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Collapsed,
 				{
-					command: 'extension.openPackageOnNpm',
+					command: 'dita-vs-code.openFile',
 					title: '',
 					arguments: [element.path]
 				});
@@ -104,11 +94,8 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 		});
 
 		return result;
-
 	}
-
 } 
-
 
 export class Dependency extends vscode.TreeItem {
 
@@ -124,8 +111,6 @@ export class Dependency extends vscode.TreeItem {
 		super(label, collapsibleState);
 
 		this.tooltip = this.version;
-		//this.type = type;
-		//this.gid = gid;
 
 		let iconName : string;
 		switch (type) {
@@ -153,7 +138,6 @@ export class Dependency extends vscode.TreeItem {
 				dark: path.join(__filename, '..', '..', 'resources', 'dark', `${iconName}.svg`)
 			};
 
-		//this.description = gid;
 		this.gid = gid;
 	}
 

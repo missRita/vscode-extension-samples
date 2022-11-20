@@ -17,176 +17,48 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:nodeDependencies",
-		"onView:ftpExplorer",
-		"onView:jsonOutline",
-		"onView:fileExplorer",
-		"onView:testView",
-		"onView:testViewDragAndDrop",
-		"onLanguage:json",
-		"onLanguage:jsonc",
-		"onCommand:testView.reveal"
+		"onView:dita-vs-code.DitaMap"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "package-explorer",
+					"id": "dita-map",
 					"title": "DITA",
 					"icon": "media/dep.svg"
 				}
 			]
 		},
 		"views": {
-			"package-explorer": [
+			"dita-map": [
 				{
-					"id": "nodeDependencies",
+					"id": "dita-vs-code.DitaMap",
 					"name": "Bookmap manager",
 					"icon": "media/dep.svg",
 					"contextualTitle": "DITA"
-				}
-			],
-			"explorer": [
-				{
-					"id": "jsonOutline",
-					"name": "Json Outline",
-					"when": "jsonOutlineEnabled"
-				},
-				{
-					"id": "ftpExplorer",
-					"name": "FTP Explorer"
-				},
-				{
-					"id": "fileExplorer",
-					"name": "File Explorer"
-				},
-				{
-					"id": "testView",
-					"name": "Test View"
-				},
-				{
-					"id": "testViewDragAndDrop",
-					"name": "Test View Drag and Drop"
 				}
 			]
 		},
 		"commands": [
 			{
-				"command": "nodeDependencies.refreshEntry",
+				"command": "dita-vs-code.RefreshBookMap",
 				"title": "Refresh",
 				"icon": {
 					"light": "resources/light/refresh.svg",
 					"dark": "resources/dark/refresh.svg"
 				}
-			},
-			{
-				"command": "ftpExplorer.refresh",
-				"title": "Refresh",
-				"icon": {
-					"light": "resources/light/refresh.svg",
-					"dark": "resources/dark/refresh.svg"
-				}
-			},
-			{
-				"command": "ftpExplorer.openFtpResource",
-				"title": "Open FTP Resource"
-			},
-			{
-				"command": "ftpExplorer.revealResource",
-				"title": "Reveal in FTP View"
-			},
-			{
-				"command": "jsonOutline.refresh",
-				"title": "Refresh",
-				"icon": {
-					"light": "resources/light/refresh.svg",
-					"dark": "resources/dark/refresh.svg"
-				}
-			},
-			{
-				"command": "jsonOutline.refreshNode",
-				"title": "Refresh",
-				"icon": {
-					"light": "resources/light/refresh.svg",
-					"dark": "resources/dark/refresh.svg"
-				}
-			},
-			{
-				"command": "jsonOutline.renameNode",
-				"title": "Rename"
-			},
-			{
-				"command": "fileExplorer.refreshFile",
-				"title": "Refresh",
-				"icon": {
-					"light": "resources/light/refresh.svg",
-					"dark": "resources/dark/refresh.svg"
-				}
-			},
-			{
-				"command": "fileExplorer.openFile",
-				"title": "Open File"
-			},
-			{
-				"command": "testView.reveal",
-				"title": "Test View: Reveal"
-			},
-			{
-				"command": "testView.changeTitle",
-				"title": "Test View: Change Title"
 			}
 		],
 		"menus": {
-			"commandPalette": [
-				{
-					"command": "ftpExplorer.revealResource"
-				}
-			],
 			"view/title": [
 				{
-					"command": "nodeDependencies.refreshEntry",
-					"when": "view == nodeDependencies",
+					"command": "dita-vs-code.RefreshBookMap",
+					"when": "view == dita-vs-code.DitaMap",
 					"group": "navigation"
-				},				{
-					"command": "jsonOutline.refresh",
-					"when": "view == jsonOutline",
-					"group": "navigation"
-				},
-				{
-					"command": "ftpExplorer.refresh",
-					"when": "view == ftpExplorer",
-					"group": "navigation"
-				}
-			],
-			"view/item/context": [
-				{
-					"command": "jsonOutline.renameNode",
-					"when": "view == jsonOutline"
-				},
-				{
-					"command": "jsonOutline.refreshNode",
-					"when": "view == jsonOutline",
-					"group": "inline"
-				},
-				{
-					"command": "fileExplorer.refreshFile",
-					"when": "view == fileExplorer && viewItem == file",
-					"group": "inline"
 				}
 			]
-		},
-		"configuration": [
-			{
-				"title": "JSON Outline",
-				"properties": {
-					"jsonOutline.autorefresh": {
-						"type": "boolean",
-						"default": false
-					}
-				}
-			}
-		]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
@@ -202,13 +74,15 @@
 		"@typescript-eslint/eslint-plugin": "^5.19.0",
 		"@typescript-eslint/parser": "^5.19.0",
 		"eslint": "^8.13.0",
-		"typescript": "^4.6.3"
+		"typescript": "^4.6.3",
+		"@types/uuid": "8.3.4"
 	},
 	"dependencies": {
 		"ftp": "^0.3.10",
-		"jsonc-parser": "^0.4.2",
+		"jsonc-parser": "^3.0.0",
 		"minimist": "^1.2.6",
 		"mkdirp": "^0.5.1",
-		"rimraf": "^2.6.2"
+		"rimraf": "^2.6.2",
+		"uuid": "8.3.2"
 	}
 }

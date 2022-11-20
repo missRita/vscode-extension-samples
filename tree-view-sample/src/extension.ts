@@ -10,13 +10,14 @@ import { TestViewDragAndDrop } from './testViewDragAndDrop';
 import { TestView } from './testView';
 
 export function activate(context: vscode.ExtensionContext) {
-	const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
-		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
 
-	// Samples of `window.registerTreeDataProvider`
-	const nodeDependenciesProvider = new DepNodeProvider(rootPath);
+	const nodeDependenciesProvider = new DepNodeProvider();
 	vscode.window.registerTreeDataProvider('nodeDependencies', nodeDependenciesProvider);
+	
+	// кнопка обновить
 	vscode.commands.registerCommand('nodeDependencies.refreshEntry', () => nodeDependenciesProvider.refresh());
+	
+	// команда открытия файла по ссылке
 	vscode.commands.registerCommand('extension.openPackageOnNpm', moduleName => 
 	{
 		const uri = vscode.Uri.file(moduleName);
@@ -27,6 +28,9 @@ export function activate(context: vscode.ExtensionContext) {
 		
 		//vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(`https://www.npmjs.com/package/${moduleName}`));
 	});
+
+
+
 	vscode.commands.registerCommand('nodeDependencies.addEntry', 
 	() => 
 	vscode.window.showInformationMessage(`Successfully called add entry.`));
